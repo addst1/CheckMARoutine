@@ -68,12 +68,17 @@
   .bar.has{background:var(--accent);}
   .bar-col .dlabel{font-size:10px;color:var(--sub);margin-top:5px;}
   .bar-col .vlabel{font-size:10px;color:var(--accent);margin-bottom:3px;}
-  .hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .hist-item{padding:12px 0;border-bottom:1px solid var(--border);}
   .hist-item:last-child{border-bottom:none;}
+  .hist-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .hist-item .l{font-size:13px;}
   .hist-item .r{text-align:right;}
   .hist-item .r .k{font-size:14px;font-weight:700;color:var(--accent);}
   .hist-item .r .m{font-size:11px;color:var(--sub);}
+  .hist-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .hist-badges{display:flex;gap:5px;}
+  .step-badge{display:inline-flex;width:22px;height:22px;flex:0 0 22px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;background:var(--card2);color:var(--sub);}
+  .step-badge.done{background:var(--accent);color:#0b1710;font-weight:700;}
   .del{background:none;border:none;color:var(--danger);font-size:12px;margin-left:10px;}
   label.field{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px;}
   input[type=number].wide, input[type=text].wide{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-size:15px;}
@@ -624,13 +629,31 @@
       histCard.innerHTML = '<div class="empty">아직 기록이 없어요. 오늘 운동을 체크하고 저장해보세요!</div>';
     } else {
       histCard.innerHTML = "";
+      var CIRCLED = ["①","②","③","④","⑤","⑥"];
       sessions.slice().reverse().slice(0,30).forEach(function(s){
         var row = document.createElement("div");
         row.className = "hist-item";
+        var routineSteps = (ROUTINES[s.routine] && ROUTINES[s.routine].steps) || [];
+        var badges = routineSteps.map(function(step, idx){
+          var d = s.detail && s.detail[step.id];
+          var done = false;
+          if(d){
+            if(step.type === "floors") done = d.floors > 0;
+            else if(step.type === "sets") done = d.sets > 0;
+            else done = !!d.checked;
+          }
+          var num = CIRCLED[idx] || (idx+1);
+          return '<span class="step-badge' + (done ? ' done' : '') + '" title="' + step.label.replace(/"/g,"") + '">' + num + '</span>';
+        }).join("");
         row.innerHTML =
-          '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + ' · ' + s.doneCount + '/' + s.totalSteps + (s.floors ? ' · 계단 ' + s.floors + '층' : '') + '</span></div>' +
-          '<div class="r"><span class="k">' + s.kcal + ' kcal</span><br><span class="m">' + s.min + '분</span></div>' +
-          '<button class="del" data-ts="' + s.ts + '">삭제</button>';
+          '<div class="hist-top">' +
+            '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + (s.floors ? ' · 계단 ' + s.floors + '층' : '') + '</span></div>' +
+            '<div class="r"><span class="k">' + s.kcal + ' kcal</span><br><span class="m">' + s.min + '분</span></div>' +
+          '</div>' +
+          '<div class="hist-bottom">' +
+            '<div class="hist-badges">' + badges + '</div>' +
+            '<button class="del" data-ts="' + s.ts + '">삭제</button>' +
+          '</div>';
         histCard.appendChild(row);
       });
       histCard.querySelectorAll(".del").forEach(function(btn){
