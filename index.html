@@ -31,16 +31,25 @@
   .seg button{flex:1;padding:9px 0;border:none;border-radius:9px;background:none;color:var(--sub);font-size:13px;font-weight:600;}
   .seg button.active{background:var(--accent);color:#0b1710;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
-  .step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+  .step{padding:12px 0;border-bottom:1px solid var(--border);}
   .step:last-child{border-bottom:none;}
+  .step-top{display:flex;gap:12px;align-items:flex-start;}
   .check{width:26px;height:26px;flex:0 0 26px;border-radius:8px;border:2px solid #4b5563;display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;margin-top:2px;}
   .check.on{background:var(--accent);border-color:var(--accent);color:#0b1710;}
   .step-body{flex:1;min-width:0;}
   .step-label{font-size:14px;line-height:1.4;}
-  .step-meta{display:flex;align-items:center;gap:8px;margin-top:6px;}
-  .step-meta input[type=number]{width:52px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 6px;font-size:13px;text-align:center;}
+  .step-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+  .step-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .step-meta input[type=number]{width:56px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 6px;font-size:13px;text-align:center;}
   .step-meta span{font-size:12px;color:var(--sub);}
   .kcal-pill{font-size:12px;background:#132417;color:var(--accent);padding:2px 8px;border-radius:20px;margin-left:auto;}
+  .stepper{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:9px;padding:3px;}
+  .stepbtn{width:28px;height:28px;border:none;border-radius:7px;background:var(--card);color:var(--text);font-size:16px;font-weight:700;line-height:1;}
+  .stepbtn:active{background:var(--accent);color:#0b1710;}
+  .stepval{font-size:13px;min-width:52px;text-align:center;font-weight:600;}
+  .floor-progress{margin-top:8px;background:var(--card2);border-radius:8px;height:8px;overflow:hidden;}
+  .floor-progress-bar{height:100%;background:var(--accent);border-radius:8px;transition:width .3s;}
+  .floor-goal-label{font-size:11px;color:var(--sub);margin-top:5px;}
   .summary{display:flex;justify-content:space-between;align-items:center;padding:14px;background:linear-gradient(135deg,#1e3324,#14201a);border-radius:14px;margin-bottom:14px;border:1px solid #24402b;}
   .summary .big{font-size:26px;font-weight:700;color:var(--accent);}
   .summary .lbl{font-size:12px;color:var(--sub);}
@@ -122,6 +131,16 @@
       <div class="stat-box"><div class="v" id="avgKcal">0</div><div class="l">회당 평균 kcal</div></div>
     </div>
 
+    <h2>계단 오르기 최고 기록</h2>
+    <div class="card">
+      <div class="row2">
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최근 기록</div><div style="font-size:20px;font-weight:700;" id="lastFloors">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최고 기록</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="bestFloors">-</div></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" id="floorsProgressBar" style="width:0%"></div></div>
+      <div style="font-size:12px;color:var(--sub);margin-top:6px;" id="floorsProgressLabel"></div>
+    </div>
+
     <h2>체중 &amp; 목표 진행률</h2>
     <div class="card">
       <div class="row2">
@@ -147,9 +166,11 @@
       <input type="number" class="wide" id="weightInput" value="83" step="0.1">
       <label class="field">목표 체중 (kg)</label>
       <input type="number" class="wide" id="targetInput" value="73" step="0.1">
+      <label class="field">계단 오르기 목표 층수</label>
+      <input type="number" class="wide" id="floorGoalInput" value="60" step="1">
       <div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5;">
         키 176cm · 체중 83kg 기준 BMI는 약 <b>26.8 (비만 1단계)</b>입니다.<br>
-        1차 목표는 <b>73kg (BMI 23.6)</b>, 최종 목표는 <b>68kg (BMI 22, 정상 범위)</b>를 추천드려요. 목표는 자유롭게 수정하세요.
+        1차 목표는 <b>73kg (BMI 23.6)</b>, 최종 목표는 <b>68kg (BMI 22, 정상 범위)</b>를 추천드려요. 계단은 현재 40층에서 최종 60층을 목표로 잡아뒀어요. 목표는 자유롭게 수정하세요.
       </div>
       <button class="btn" id="saveSettingsBtn" style="margin-top:14px;">저장</button>
     </div>
@@ -181,34 +202,35 @@
   "use strict";
 
   // ---------- 데이터 ----------
+  // type: "floors" (계단 전용, 층수 입력) / "sets" (세트 수 입력) / "plain" (단순 체크 + 분)
   var ROUTINES = {
     basic: {
       name: "기본 64빌딩 루틴",
       steps: [
-        {id:"stairs20", label:"① 아파트 계단 20층 오르기 × 2회 (엘리베이터 하향, 세트간 1분 휴식)", met:8, min:8, track:true},
-        {id:"lunge_lap", label:"② 런지 워킹 20걸음 → 단지 2바퀴 돌며 초등학교 이동", met:5, min:12, track:true},
-        {id:"incline_row", label:"③ 철봉 인클라인 로우 10~15회 × 3세트 (세트간 1분 휴식)", met:5, min:6, track:true},
-        {id:"finish_stairs", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true}
+        {id:"stairs", type:"floors", label:"① 아파트 계단 오르기", met:8, minPerFloor:0.2, defaultFloors:40, track:true},
+        {id:"lunge_lap", type:"sets", label:"② 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true},
+        {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true},
+        {id:"finish_stairs", type:"plain", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true}
       ]
     },
     travel: {
       name: "출장용 호텔 루틴",
       steps: [
-        {id:"treadmill", label:"① 러닝머신 경사 10~12, 4~5km/h 15~20분 걷기", met:7, min:17, track:true},
-        {id:"dumbbell_lunge", label:"② 덤벨 런지 워킹 왕복 20걸음", met:5, min:4, track:true},
-        {id:"back_row", label:"③ 랫풀다운 또는 원암 덤벨 로우 3세트", met:5, min:6, track:true},
-        {id:"shower", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false}
+        {id:"treadmill", type:"sets", label:"① 러닝머신 경사 10~12도 걷기", setDef:"1세트 = 20분 걷기 (4~5km/h)", met:7, defaultSets:1, minPerSet:20, track:true},
+        {id:"dumbbell_lunge", type:"sets", label:"② 덤벨 런지 워킹", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true},
+        {id:"back_row", type:"sets", label:"③ 랫풀다운 / 원암 덤벨 로우", setDef:"1세트 = 15개", met:5, defaultSets:3, minPerSet:2, track:true},
+        {id:"shower", type:"plain", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false}
       ]
     }
   };
 
-  var LS_KEY = "wc_sessions_v1";
-  var LS_SETTINGS = "wc_settings_v1";
+  var LS_KEY = "wc_sessions_v2";
+  var LS_SETTINGS = "wc_settings_v2";
   var LS_WEIGHTLOG = "wc_weightlog_v1";
 
   var state = {
     routine: "basic",
-    stepState: {}, // id -> {checked, min}
+    stepState: {},
     settings: loadSettings(),
   };
 
@@ -217,7 +239,7 @@
       var s = JSON.parse(localStorage.getItem(LS_SETTINGS));
       if(s && s.height && s.weight) return s;
     }catch(e){}
-    return {height:176, weight:83, target:73};
+    return {height:176, weight:83, target:73, floorGoal:60};
   }
   function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings)); }
 
@@ -243,7 +265,13 @@
   function initStepState(){
     state.stepState = {};
     ROUTINES[state.routine].steps.forEach(function(s){
-      state.stepState[s.id] = {checked:false, min:s.min};
+      if(s.type === "floors"){
+        state.stepState[s.id] = {floors: s.defaultFloors};
+      } else if(s.type === "sets"){
+        state.stepState[s.id] = {sets: s.defaultSets, minPerSet: s.minPerSet};
+      } else {
+        state.stepState[s.id] = {checked:false, min:s.min};
+      }
     });
   }
   initStepState();
@@ -279,19 +307,69 @@
       var st = state.stepState[s.id];
       var row = document.createElement("div");
       row.className = "step";
-      var kcal = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
-      row.innerHTML =
-        '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">✓</div>' +
-        '<div class="step-body">' +
-          '<div class="step-label">' + s.label + '</div>' +
-          (s.track ?
-            '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal + ' kcal</span></div>'
-            : '<div class="step-meta"><span>운동 아님</span></div>') +
-        '</div>';
+
+      if(s.type === "floors"){
+        var minutes = st.floors * s.minPerFloor;
+        var kcal = Math.round(kcalFor(s.met, minutes, state.settings.weight));
+        var goal = state.settings.floorGoal || 60;
+        var pct = Math.min(100, Math.round((st.floors / goal) * 100));
+        row.innerHTML =
+          '<div class="step-top">' +
+            '<div class="check' + (st.floors > 0 ? ' on' : '') + '">✓</div>' +
+            '<div class="step-body">' +
+              '<div class="step-label">' + s.label + '</div>' +
+              '<div class="step-sub">오늘 오른 층수를 입력하세요</div>' +
+              '<div class="step-meta">' +
+                '<div class="stepper">' +
+                  '<button class="stepbtn" data-floordec="' + s.id + '">−</button>' +
+                  '<span class="stepval">' + st.floors + '층</span>' +
+                  '<button class="stepbtn" data-floorinc="' + s.id + '">+</button>' +
+                '</div>' +
+                '<span class="kcal-pill">' + kcal + ' kcal · 약 ' + Math.round(minutes) + '분</span>' +
+              '</div>' +
+              '<div class="floor-progress"><div class="floor-progress-bar" style="width:' + pct + '%"></div></div>' +
+              '<div class="floor-goal-label">목표 ' + goal + '층 중 ' + st.floors + '층 (' + pct + '%)</div>' +
+            '</div>' +
+          '</div>';
+      } else if(s.type === "sets"){
+        var minutes2 = st.sets * st.minPerSet;
+        var kcal2 = Math.round(kcalFor(s.met, minutes2, state.settings.weight));
+        row.innerHTML =
+          '<div class="step-top">' +
+            '<div class="check' + (st.sets > 0 ? ' on' : '') + '">✓</div>' +
+            '<div class="step-body">' +
+              '<div class="step-label">' + s.label + '</div>' +
+              '<div class="step-sub">' + s.setDef + '</div>' +
+              '<div class="step-meta">' +
+                '<div class="stepper">' +
+                  '<button class="stepbtn" data-setdec="' + s.id + '">−</button>' +
+                  '<span class="stepval">' + st.sets + '세트</span>' +
+                  '<button class="stepbtn" data-setinc="' + s.id + '">+</button>' +
+                '</div>' +
+                '<input type="number" min="0.5" step="0.5" data-minset="' + s.id + '" value="' + st.minPerSet + '">' +
+                '<span>분/세트</span>' +
+                '<span class="kcal-pill">' + kcal2 + ' kcal</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        var kcal3 = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
+        row.innerHTML =
+          '<div class="step-top">' +
+            '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">✓</div>' +
+            '<div class="step-body">' +
+              '<div class="step-label">' + s.label + '</div>' +
+              (s.track ?
+                '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal3 + ' kcal</span></div>'
+                : '<div class="step-meta"><span>운동 아님</span></div>') +
+            '</div>' +
+          '</div>';
+      }
       card.appendChild(row);
     });
 
-    card.querySelectorAll(".check").forEach(function(el){
+    // 단순 체크 (plain)
+    card.querySelectorAll(".check[data-id]").forEach(function(el){
       el.addEventListener("click", function(){
         var id = el.dataset.id;
         state.stepState[id].checked = !state.stepState[id].checked;
@@ -307,6 +385,46 @@
         updateSummary();
       });
     });
+
+    // 층수 스테퍼
+    card.querySelectorAll("[data-floorinc]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.dataset.floorinc;
+        state.stepState[id].floors = Math.max(0, state.stepState[id].floors + 5);
+        renderSteps(); updateSummary();
+      });
+    });
+    card.querySelectorAll("[data-floordec]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.dataset.floordec;
+        state.stepState[id].floors = Math.max(0, state.stepState[id].floors - 5);
+        renderSteps(); updateSummary();
+      });
+    });
+
+    // 세트 스테퍼
+    card.querySelectorAll("[data-setinc]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.dataset.setinc;
+        state.stepState[id].sets = Math.max(0, state.stepState[id].sets + 1);
+        renderSteps(); updateSummary();
+      });
+    });
+    card.querySelectorAll("[data-setdec]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.dataset.setdec;
+        state.stepState[id].sets = Math.max(0, state.stepState[id].sets - 1);
+        renderSteps(); updateSummary();
+      });
+    });
+    card.querySelectorAll("input[data-minset]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var id = inp.dataset.minset;
+        state.stepState[id].minPerSet = parseFloat(inp.value) || 0;
+        renderSteps(); updateSummary();
+      });
+    });
+
     updateSummary();
   }
 
@@ -315,9 +433,12 @@
     var totalKcal = 0, doneCount = 0;
     steps.forEach(function(s){
       var st = state.stepState[s.id];
-      if(st.checked){
-        doneCount++;
-        if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight);
+      if(s.type === "floors"){
+        if(st.floors > 0){ doneCount++; totalKcal += kcalFor(s.met, st.floors * s.minPerFloor, state.settings.weight); }
+      } else if(s.type === "sets"){
+        if(st.sets > 0){ doneCount++; totalKcal += kcalFor(s.met, st.sets * st.minPerSet, state.settings.weight); }
+      } else {
+        if(st.checked){ doneCount++; if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight); }
       }
     });
     document.getElementById("todayKcal").textContent = Math.round(totalKcal) + " kcal";
@@ -330,15 +451,33 @@
     var detail = {};
     steps.forEach(function(s){
       var st = state.stepState[s.id];
-      detail[s.id] = {checked: st.checked, min: st.min};
-      if(st.checked){
-        doneCount++;
-        totalMin += st.min;
-        if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight);
+      if(s.type === "floors"){
+        detail[s.id] = {floors: st.floors};
+        if(st.floors > 0){
+          doneCount++;
+          var m = st.floors * s.minPerFloor;
+          totalMin += m;
+          totalKcal += kcalFor(s.met, m, state.settings.weight);
+        }
+      } else if(s.type === "sets"){
+        detail[s.id] = {sets: st.sets, minPerSet: st.minPerSet};
+        if(st.sets > 0){
+          doneCount++;
+          var m2 = st.sets * st.minPerSet;
+          totalMin += m2;
+          totalKcal += kcalFor(s.met, m2, state.settings.weight);
+        }
+      } else {
+        detail[s.id] = {checked: st.checked, min: st.min};
+        if(st.checked){
+          doneCount++;
+          totalMin += st.min;
+          if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight);
+        }
       }
     });
     if(doneCount === 0){
-      document.getElementById("savedNote").textContent = "체크한 항목이 없어요. 완료한 운동을 먼저 체크해주세요.";
+      document.getElementById("savedNote").textContent = "완료한 항목이 없어요. 먼저 기록을 입력해주세요.";
       return;
     }
     var sessions = loadSessions();
@@ -350,7 +489,8 @@
       doneCount: doneCount,
       totalSteps: steps.length,
       kcal: Math.round(totalKcal),
-      min: totalMin,
+      min: Math.round(totalMin),
+      floors: state.stepState.stairs ? state.stepState.stairs.floors : 0,
       detail: detail
     });
     saveSessions(sessions);
@@ -418,6 +558,18 @@
     var avg = sessions.length ? Math.round(sessions.reduce(function(a,s){return a+s.kcal;},0)/sessions.length) : 0;
     document.getElementById("avgKcal").textContent = avg;
 
+    // 계단 기록
+    var floorSessions = sessions.filter(function(s){ return s.floors && s.floors > 0; });
+    var lastFloors = floorSessions.length ? floorSessions[floorSessions.length-1].floors : 0;
+    var bestFloors = floorSessions.length ? Math.max.apply(null, floorSessions.map(function(s){ return s.floors; })) : 0;
+    document.getElementById("lastFloors").textContent = lastFloors + "층";
+    document.getElementById("bestFloors").textContent = bestFloors + "층";
+    var floorGoal = state.settings.floorGoal || 60;
+    var fPct = Math.min(100, Math.round((bestFloors / floorGoal) * 100));
+    document.getElementById("floorsProgressBar").style.width = fPct + "%";
+    document.getElementById("floorsProgressLabel").textContent =
+      bestFloors >= floorGoal ? "🎉 목표 " + floorGoal + "층 달성!" : ("목표 " + floorGoal + "층까지 " + (floorGoal - bestFloors) + "층 남았어요 (" + fPct + "%)");
+
     // 체중 & 목표
     var wlog = loadWeightLog();
     var curWeight = wlog.length ? wlog[wlog.length-1].weight : state.settings.weight;
@@ -452,7 +604,7 @@
         var row = document.createElement("div");
         row.className = "hist-item";
         row.innerHTML =
-          '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + ' · ' + s.doneCount + '/' + s.totalSteps + '</span></div>' +
+          '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + ' · ' + s.doneCount + '/' + s.totalSteps + (s.floors ? ' · 계단 ' + s.floors + '층' : '') + '</span></div>' +
           '<div class="r"><span class="k">' + s.kcal + ' kcal</span><br><span class="m">' + s.min + '분</span></div>' +
           '<button class="del" data-ts="' + s.ts + '">삭제</button>';
         histCard.appendChild(row);
@@ -473,6 +625,7 @@
     document.getElementById("heightInput").value = state.settings.height;
     document.getElementById("weightInput").value = state.settings.weight;
     document.getElementById("targetInput").value = state.settings.target;
+    document.getElementById("floorGoalInput").value = state.settings.floorGoal || 60;
     renderWeightLogList();
   }
 
@@ -480,6 +633,7 @@
     state.settings.height = parseFloat(document.getElementById("heightInput").value) || 176;
     state.settings.weight = parseFloat(document.getElementById("weightInput").value) || 83;
     state.settings.target = parseFloat(document.getElementById("targetInput").value) || 73;
+    state.settings.floorGoal = parseFloat(document.getElementById("floorGoalInput").value) || 60;
     saveSettings();
     renderSteps();
     var btn = document.getElementById("saveSettingsBtn");
