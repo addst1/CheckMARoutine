@@ -39,6 +39,7 @@
   .step-body{flex:1;min-width:0;}
   .step-label{font-size:14px;line-height:1.4;}
   .step-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+  .step-tip{font-size:11px;color:#93c5fd;margin-top:6px;line-height:1.5;background:#131c2b;border-radius:8px;padding:6px 8px;}
   .step-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
   .step-meta input[type=number]{width:56px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 6px;font-size:13px;text-align:center;}
   .step-meta span{font-size:12px;color:var(--sub);}
@@ -96,8 +97,9 @@
   <!-- 오늘 뷰 -->
   <div class="view active" id="view-today">
     <div class="seg" id="routineSeg">
-      <button data-routine="basic" class="active">🏃 기본 (64빌딩)</button>
-      <button data-routine="travel">🏨 출장용 (호텔)</button>
+      <button data-routine="basic" class="active">🏃 기본</button>
+      <button data-routine="travel">🏨 출장용</button>
+      <button data-routine="cycle">🚴 자전거</button>
     </div>
 
     <div class="summary">
@@ -207,19 +209,38 @@
     basic: {
       name: "기본 64빌딩 루틴",
       steps: [
-        {id:"stairs", type:"floors", label:"① 아파트 계단 오르기", met:8, minPerFloor:0.2, defaultFloors:40, track:true},
-        {id:"lunge_lap", type:"sets", label:"② 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true},
-        {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true},
-        {id:"finish_stairs", type:"plain", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true}
+        {id:"stairs", type:"floors", label:"① 아파트 계단 오르기", met:8, minPerFloor:0.2, defaultFloors:40, track:true,
+          tip:"💡 발 전체로 딛고 무릎이 발끝을 넘지 않게 오르면 무릎 부담이 줄어요. 난간은 가볍게만 잡고 리듬있게!"},
+        {id:"lunge_lap", type:"sets", label:"② 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true,
+          tip:"💡 앞무릎이 발끝보다 앞으로 나가지 않게, 상체는 곧게 세운 채로 걸으면 허벅지·엉덩이 자극이 잘 들어와요."},
+        {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true,
+          tip:"💡 당길 때 어깨를 으쓱하지 말고 견갑골을 모으는 느낌으로! 반동 없이 천천히가 등 자극에 더 효과적이에요."},
+        {id:"finish_stairs", type:"plain", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true,
+          tip:"💡 마무리 계단은 천천히 걷듯이 올라가도 충분해요. 샤워 전 스트레칭 1~2분 추가하면 회복에 좋아요."}
       ]
     },
     travel: {
       name: "출장용 호텔 루틴",
       steps: [
-        {id:"treadmill", type:"sets", label:"① 러닝머신 경사 10~12도 걷기", setDef:"1세트 = 20분 걷기 (4~5km/h)", met:7, defaultSets:1, minPerSet:20, track:true},
-        {id:"dumbbell_lunge", type:"sets", label:"② 덤벨 런지 워킹", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true},
-        {id:"back_row", type:"sets", label:"③ 랫풀다운 / 원암 덤벨 로우", setDef:"1세트 = 15개", met:5, defaultSets:3, minPerSet:2, track:true},
-        {id:"shower", type:"plain", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false}
+        {id:"treadmill", type:"sets", label:"① 러닝머신 경사 10~12도 걷기", setDef:"1세트 = 20분 걷기 (4~5km/h)", met:7, defaultSets:1, minPerSet:20, track:true,
+          tip:"💡 손잡이를 꽉 잡지 말고 팔을 자연스럽게 흔들며 걸어야 칼로리 소모 효과가 커져요."},
+        {id:"dumbbell_lunge", type:"sets", label:"② 덤벨 런지 워킹", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true,
+          tip:"💡 복도가 좁으면 제자리 런지로 대체해도 효과는 비슷해요."},
+        {id:"back_row", type:"sets", label:"③ 랫풀다운 / 원암 덤벨 로우", setDef:"1세트 = 15개", met:5, defaultSets:3, minPerSet:2, track:true,
+          tip:"💡 무게보다 자세가 우선! 반동 없이 천천히 당기고 내리세요."},
+        {id:"shower", type:"plain", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false,
+          tip:"💡 운동 중 흘린 땀만큼 물 한 컵 챙겨 마시는 것 잊지 마세요."}
+      ]
+    },
+    cycle: {
+      name: "자전거 회복 라이딩 (쉬는날)",
+      steps: [
+        {id:"cycle_warmup", type:"sets", label:"① 워밍업", setDef:"1세트 = 5분 (저저항, RPM 50~60)", met:3.5, defaultSets:1, minPerSet:5, track:true,
+          tip:"💡 다리를 가볍게 풀어준다는 느낌으로, 저항은 낮게 시작하세요."},
+        {id:"cycle_main", type:"sets", label:"② 메인 라이딩", setDef:"1세트 = 10분 (중강도, RPM 65~75)", met:6, defaultSets:2, minPerSet:10, track:true,
+          tip:"💡 옆사람과 대화 가능한 강도(RPE 4~5)가 적당해요. 숨이 차서 말하기 힘들면 저항을 낮추세요. 격일 쉬는 날은 다리 회복이 목적이니 인터벌·언덕 모드는 피하세요."},
+        {id:"cycle_cooldown", type:"sets", label:"③ 쿨다운", setDef:"1세트 = 3분 (저저항, 천천히)", met:3, defaultSets:1, minPerSet:3, track:true,
+          tip:"💡 저항을 낮추고 천천히 페달을 돌리며 심박수를 서서히 내려주세요."}
       ]
     }
   };
@@ -329,6 +350,7 @@
               '</div>' +
               '<div class="floor-progress"><div class="floor-progress-bar" style="width:' + pct + '%"></div></div>' +
               '<div class="floor-goal-label">목표 ' + goal + '층 중 ' + st.floors + '층 (' + pct + '%)</div>' +
+              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
             '</div>' +
           '</div>';
       } else if(s.type === "sets"){
@@ -350,6 +372,7 @@
                 '<span>분/세트</span>' +
                 '<span class="kcal-pill">' + kcal2 + ' kcal</span>' +
               '</div>' +
+              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
             '</div>' +
           '</div>';
       } else {
@@ -362,6 +385,7 @@
               (s.track ?
                 '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal3 + ' kcal</span></div>'
                 : '<div class="step-meta"><span>운동 아님</span></div>') +
+              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
             '</div>' +
           '</div>';
       }
