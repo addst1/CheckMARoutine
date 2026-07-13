@@ -159,6 +159,14 @@
       <div style="font-size:12px;margin-top:10px;">현재 BMI <b id="curBmi">-</b><span class="badge" id="bmiBadge"></span></div>
     </div>
 
+    <h2>감량 시 주의사항</h2>
+    <div class="card" style="font-size:12px;color:var(--sub);line-height:1.7;">
+      <div>⚠️ 안전한 감량 속도는 <b style="color:var(--text)">주당 0.5~1kg (한 달 2~4kg)</b>까지예요. 이보다 빠르면 근육 손실·요요·컨디션 저하 위험이 커져요.</div>
+      <div style="margin-top:8px;">🍗 체중 1kg당 단백질 <b style="color:var(--text)">1.2~1.6g</b>은 챙겨 드세요. 운동은 하는데 단백질이 부족하면 근육부터 빠져요.</div>
+      <div style="margin-top:8px;">🎯 목표체중(68kg, BMI 22) 아래로 무리하게 더 빼지 않는 게 좋아요. 그 이하는 건강상 이점보다 리스크가 커질 수 있어요.</div>
+      <div style="margin-top:8px;">🚨 어지럼증, 무기력, 생리불순 등이 생기면 감량 속도를 늦추고 필요하면 병원 상담을 받으세요.</div>
+    </div>
+
     <h2>운동 기록</h2>
     <div class="card" id="historyCard"></div>
   </div>
@@ -296,7 +304,7 @@
       } else if(s.type === "sets"){
         state.stepState[s.id] = {sets: s.defaultSets, minPerSet: s.minPerSet};
       } else {
-        state.stepState[s.id] = {checked:false, min:s.min};
+        state.stepState[s.id] = {checked:true, min:s.min};
       }
     });
   }
