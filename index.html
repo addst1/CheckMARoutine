@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>운동 체크</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1d24; --card2:#20242c; --accent:#4ade80; --accent2:#22c55e;
+    --text:#f3f4f6; --sub:#9ca3af; --danger:#f87171; --border:#2a2e37;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;}
+  body{padding-bottom:76px; min-height:100vh;}
+  header{position:sticky;top:0;z-index:10;background:rgba(15,17,21,0.92);backdrop-filter:blur(8px);padding:16px 16px 8px;border-bottom:1px solid var(--border);}
+  header h1{font-size:19px;margin:0 0 2px;}
+  header .date{font-size:13px;color:var(--sub);}
+  main{padding:14px 14px 20px;max-width:520px;margin:0 auto;}
+  .tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:#151821;border-top:1px solid var(--border);z-index:20;max-width:520px;margin:0 auto;}
+  .tabs button{flex:1;background:none;border:none;color:var(--sub);padding:10px 0 calc(10px + env(safe-area-inset-bottom));font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .tabs button.active{color:var(--accent);}
+  .tabs button .ic{font-size:19px;}
+  .view{display:none;}
+  .view.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .seg{display:flex;background:var(--card);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px;border:1px solid var(--border);}
+  .seg button{flex:1;padding:9px 0;border:none;border-radius:9px;background:none;color:var(--sub);font-size:13px;font-weight:600;}
+  .seg button.active{background:var(--accent);color:#0b1710;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+  .step:last-child{border-bottom:none;}
+  .check{width:26px;height:26px;flex:0 0 26px;border-radius:8px;border:2px solid #4b5563;display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;margin-top:2px;}
+  .check.on{background:var(--accent);border-color:var(--accent);color:#0b1710;}
+  .step-body{flex:1;min-width:0;}
+  .step-label{font-size:14px;line-height:1.4;}
+  .step-meta{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .step-meta input[type=number]{width:52px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 6px;font-size:13px;text-align:center;}
+  .step-meta span{font-size:12px;color:var(--sub);}
+  .kcal-pill{font-size:12px;background:#132417;color:var(--accent);padding:2px 8px;border-radius:20px;margin-left:auto;}
+  .summary{display:flex;justify-content:space-between;align-items:center;padding:14px;background:linear-gradient(135deg,#1e3324,#14201a);border-radius:14px;margin-bottom:14px;border:1px solid #24402b;}
+  .summary .big{font-size:26px;font-weight:700;color:var(--accent);}
+  .summary .lbl{font-size:12px;color:var(--sub);}
+  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#0b1710;font-weight:700;font-size:15px;margin-top:6px;}
+  .btn.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+  .btn.ghost{background:none;color:var(--danger);border:1px solid #3a2323;}
+  h2{font-size:15px;margin:0 0 10px;color:var(--sub);font-weight:600;letter-spacing:.3px;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;}
+  .stat-box .v{font-size:20px;font-weight:700;}
+  .stat-box .l{font-size:11px;color:var(--sub);margin-top:2px;}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding:8px 4px 0;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar{width:100%;background:var(--card2);border-radius:6px 6px 0 0;position:relative;min-height:3px;}
+  .bar.has{background:var(--accent);}
+  .bar-col .dlabel{font-size:10px;color:var(--sub);margin-top:5px;}
+  .bar-col .vlabel{font-size:10px;color:var(--accent);margin-bottom:3px;}
+  .hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item .l{font-size:13px;}
+  .hist-item .r{text-align:right;}
+  .hist-item .r .k{font-size:14px;font-weight:700;color:var(--accent);}
+  .hist-item .r .m{font-size:11px;color:var(--sub);}
+  .del{background:none;border:none;color:var(--danger);font-size:12px;margin-left:10px;}
+  label.field{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px;}
+  input[type=number].wide, input[type=text].wide{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-size:15px;}
+  .row2{display:flex;gap:10px;}
+  .row2 > div{flex:1;}
+  .empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 0;}
+  .progress-wrap{margin-top:10px;background:var(--card2);border-radius:10px;height:10px;overflow:hidden;}
+  .progress-bar{height:100%;background:var(--accent);border-radius:10px;transition:width .3s;}
+  .badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:20px;background:var(--card2);color:var(--sub);margin-left:6px;}
+  .badge.good{background:#132417;color:var(--accent);}
+  .badge.warn{background:#2b1f14;color:#fbbf24;}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="headerTitle">💪 오늘의 운동</h1>
+  <div class="date" id="todayLabel"></div>
+</header>
+
+<main>
+  <!-- 오늘 뷰 -->
+  <div class="view active" id="view-today">
+    <div class="seg" id="routineSeg">
+      <button data-routine="basic" class="active">🏃 기본 (64빌딩)</button>
+      <button data-routine="travel">🏨 출장용 (호텔)</button>
+    </div>
+
+    <div class="summary">
+      <div>
+        <div class="lbl">예상 소모 칼로리</div>
+        <div class="big" id="todayKcal">0 kcal</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lbl">완료</div>
+        <div class="big" id="todayProgress" style="color:var(--text);font-size:20px">0/4</div>
+      </div>
+    </div>
+
+    <div class="card" id="stepsCard"></div>
+
+    <button class="btn" id="saveBtn">✅ 오늘 운동 저장</button>
+    <div id="savedNote" style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;"></div>
+  </div>
+
+  <!-- 통계 뷰 -->
+  <div class="view" id="view-stats">
+    <h2>이번 주 소모 칼로리</h2>
+    <div class="card">
+      <div class="bars" id="weekBars"></div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="v" id="streakVal">0일</div><div class="l">🔥 연속 운동</div></div>
+      <div class="stat-box"><div class="v" id="monthKcal">0</div><div class="l">이번 달 총 kcal</div></div>
+      <div class="stat-box"><div class="v" id="totalSessions">0회</div><div class="l">총 운동 횟수</div></div>
+      <div class="stat-box"><div class="v" id="avgKcal">0</div><div class="l">회당 평균 kcal</div></div>
+    </div>
+
+    <h2>체중 &amp; 목표 진행률</h2>
+    <div class="card">
+      <div class="row2">
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">현재 체중</div><div style="font-size:20px;font-weight:700;" id="curWeightVal">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">목표 체중</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="targetWeightVal">-</div></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" id="weightProgressBar" style="width:0%"></div></div>
+      <div style="font-size:12px;color:var(--sub);margin-top:6px;" id="weightProgressLabel"></div>
+      <div style="font-size:12px;margin-top:10px;">현재 BMI <b id="curBmi">-</b><span class="badge" id="bmiBadge"></span></div>
+    </div>
+
+    <h2>운동 기록</h2>
+    <div class="card" id="historyCard"></div>
+  </div>
+
+  <!-- 설정 뷰 -->
+  <div class="view" id="view-settings">
+    <h2>신체 정보</h2>
+    <div class="card">
+      <label class="field">키 (cm)</label>
+      <input type="number" class="wide" id="heightInput" value="176">
+      <label class="field">현재 체중 (kg)</label>
+      <input type="number" class="wide" id="weightInput" value="83" step="0.1">
+      <label class="field">목표 체중 (kg)</label>
+      <input type="number" class="wide" id="targetInput" value="73" step="0.1">
+      <div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5;">
+        키 176cm · 체중 83kg 기준 BMI는 약 <b>26.8 (비만 1단계)</b>입니다.<br>
+        1차 목표는 <b>73kg (BMI 23.6)</b>, 최종 목표는 <b>68kg (BMI 22, 정상 범위)</b>를 추천드려요. 목표는 자유롭게 수정하세요.
+      </div>
+      <button class="btn" id="saveSettingsBtn" style="margin-top:14px;">저장</button>
+    </div>
+
+    <h2>체중 기록 추가</h2>
+    <div class="card">
+      <div class="row2">
+        <div><input type="number" class="wide" id="weightLogInput" placeholder="예: 82.5" step="0.1"></div>
+        <div style="flex:0 0 100px;"><button class="btn secondary" id="addWeightLogBtn">기록</button></div>
+      </div>
+      <div id="weightLogList" style="margin-top:10px;"></div>
+    </div>
+
+    <h2>데이터 관리</h2>
+    <div class="card">
+      <button class="btn ghost" id="resetBtn">모든 기록 초기화</button>
+    </div>
+  </div>
+</main>
+
+<div class="tabs">
+  <button class="tab-btn active" data-view="today"><span class="ic">✅</span>오늘</button>
+  <button class="tab-btn" data-view="stats"><span class="ic">📊</span>통계</button>
+  <button class="tab-btn" data-view="settings"><span class="ic">⚙️</span>설정</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 데이터 ----------
+  var ROUTINES = {
+    basic: {
+      name: "기본 64빌딩 루틴",
+      steps: [
+        {id:"stairs20", label:"① 아파트 계단 20층 오르기 × 2회 (엘리베이터 하향, 세트간 1분 휴식)", met:8, min:8, track:true},
+        {id:"lunge_lap", label:"② 런지 워킹 20걸음 → 단지 2바퀴 돌며 초등학교 이동", met:5, min:12, track:true},
+        {id:"incline_row", label:"③ 철봉 인클라인 로우 10~15회 × 3세트 (세트간 1분 휴식)", met:5, min:6, track:true},
+        {id:"finish_stairs", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true}
+      ]
+    },
+    travel: {
+      name: "출장용 호텔 루틴",
+      steps: [
+        {id:"treadmill", label:"① 러닝머신 경사 10~12, 4~5km/h 15~20분 걷기", met:7, min:17, track:true},
+        {id:"dumbbell_lunge", label:"② 덤벨 런지 워킹 왕복 20걸음", met:5, min:4, track:true},
+        {id:"back_row", label:"③ 랫풀다운 또는 원암 덤벨 로우 3세트", met:5, min:6, track:true},
+        {id:"shower", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false}
+      ]
+    }
+  };
+
+  var LS_KEY = "wc_sessions_v1";
+  var LS_SETTINGS = "wc_settings_v1";
+  var LS_WEIGHTLOG = "wc_weightlog_v1";
+
+  var state = {
+    routine: "basic",
+    stepState: {}, // id -> {checked, min}
+    settings: loadSettings(),
+  };
+
+  function loadSettings(){
+    try{
+      var s = JSON.parse(localStorage.getItem(LS_SETTINGS));
+      if(s && s.height && s.weight) return s;
+    }catch(e){}
+    return {height:176, weight:83, target:73};
+  }
+  function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings)); }
+
+  function loadSessions(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; }
+  }
+  function saveSessions(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+
+  function loadWeightLog(){
+    try{ return JSON.parse(localStorage.getItem(LS_WEIGHTLOG)) || []; }catch(e){ return []; }
+  }
+  function saveWeightLog(list){ localStorage.setItem(LS_WEIGHTLOG, JSON.stringify(list)); }
+
+  function todayStr(d){
+    d = d || new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+
+  function kcalFor(met, minutes, weight){
+    return (met * 3.5 * weight / 200) * minutes;
+  }
+
+  function initStepState(){
+    state.stepState = {};
+    ROUTINES[state.routine].steps.forEach(function(s){
+      state.stepState[s.id] = {checked:false, min:s.min};
+    });
+  }
+  initStepState();
+
+  // ---------- 탭 전환 ----------
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+      document.getElementById("view-"+btn.dataset.view).classList.add("active");
+      if(btn.dataset.view === "stats") renderStats();
+      if(btn.dataset.view === "settings") renderSettings();
+    });
+  });
+
+  document.getElementById("routineSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-routine]");
+    if(!btn) return;
+    document.querySelectorAll("#routineSeg button").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    state.routine = btn.dataset.routine;
+    initStepState();
+    renderSteps();
+  });
+
+  // ---------- 오늘 뷰 렌더 ----------
+  function renderSteps(){
+    var card = document.getElementById("stepsCard");
+    card.innerHTML = "";
+    var steps = ROUTINES[state.routine].steps;
+    steps.forEach(function(s){
+      var st = state.stepState[s.id];
+      var row = document.createElement("div");
+      row.className = "step";
+      var kcal = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
+      row.innerHTML =
+        '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">✓</div>' +
+        '<div class="step-body">' +
+          '<div class="step-label">' + s.label + '</div>' +
+          (s.track ?
+            '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal + ' kcal</span></div>'
+            : '<div class="step-meta"><span>운동 아님</span></div>') +
+        '</div>';
+      card.appendChild(row);
+    });
+
+    card.querySelectorAll(".check").forEach(function(el){
+      el.addEventListener("click", function(){
+        var id = el.dataset.id;
+        state.stepState[id].checked = !state.stepState[id].checked;
+        renderSteps();
+        updateSummary();
+      });
+    });
+    card.querySelectorAll("input[data-min]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var id = inp.dataset.min;
+        state.stepState[id].min = parseFloat(inp.value) || 0;
+        renderSteps();
+        updateSummary();
+      });
+    });
+    updateSummary();
+  }
+
+  function updateSummary(){
+    var steps = ROUTINES[state.routine].steps;
+    var totalKcal = 0, doneCount = 0;
+    steps.forEach(function(s){
+      var st = state.stepState[s.id];
+      if(st.checked){
+        doneCount++;
+        if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight);
+      }
+    });
+    document.getElementById("todayKcal").textContent = Math.round(totalKcal) + " kcal";
+    document.getElementById("todayProgress").textContent = doneCount + "/" + steps.length;
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", function(){
+    var steps = ROUTINES[state.routine].steps;
+    var totalKcal = 0, totalMin = 0, doneCount = 0;
+    var detail = {};
+    steps.forEach(function(s){
+      var st = state.stepState[s.id];
+      detail[s.id] = {checked: st.checked, min: st.min};
+      if(st.checked){
+        doneCount++;
+        totalMin += st.min;
+        if(s.track) totalKcal += kcalFor(s.met, st.min, state.settings.weight);
+      }
+    });
+    if(doneCount === 0){
+      document.getElementById("savedNote").textContent = "체크한 항목이 없어요. 완료한 운동을 먼저 체크해주세요.";
+      return;
+    }
+    var sessions = loadSessions();
+    sessions.push({
+      date: todayStr(),
+      ts: Date.now(),
+      routine: state.routine,
+      routineName: ROUTINES[state.routine].name,
+      doneCount: doneCount,
+      totalSteps: steps.length,
+      kcal: Math.round(totalKcal),
+      min: totalMin,
+      detail: detail
+    });
+    saveSessions(sessions);
+    document.getElementById("savedNote").textContent = "✔ 저장 완료! (" + Math.round(totalKcal) + " kcal)";
+    setTimeout(function(){ document.getElementById("savedNote").textContent = ""; }, 2500);
+  });
+
+  // ---------- 통계 뷰 ----------
+  function renderStats(){
+    var sessions = loadSessions();
+
+    // 최근 7일 바 차트
+    var days = [];
+    for(var i=6; i>=0; i--){
+      var d = new Date();
+      d.setDate(d.getDate()-i);
+      days.push(d);
+    }
+    var byDate = {};
+    sessions.forEach(function(s){
+      byDate[s.date] = (byDate[s.date] || 0) + s.kcal;
+    });
+    var maxKcal = Math.max.apply(null, days.map(function(d){ return byDate[todayStr(d)] || 0; }).concat([1]));
+    var barsEl = document.getElementById("weekBars");
+    barsEl.innerHTML = "";
+    days.forEach(function(d){
+      var ds = todayStr(d);
+      var kcal = byDate[ds] || 0;
+      var h = Math.max(3, Math.round((kcal / maxKcal) * 100));
+      var col = document.createElement("div");
+      col.className = "bar-col";
+      col.innerHTML =
+        (kcal > 0 ? '<div class="vlabel">' + kcal + '</div>' : '<div class="vlabel">&nbsp;</div>') +
+        '<div class="bar' + (kcal>0 ? ' has' : '') + '" style="height:' + h + '%"></div>' +
+        '<div class="dlabel">' + ["일","월","화","수","목","금","토"][d.getDay()] + '</div>';
+      barsEl.appendChild(col);
+    });
+
+    // 연속 운동일
+    var dateSet = new Set(sessions.map(function(s){ return s.date; }));
+    var streak = 0;
+    var cur = new Date();
+    while(dateSet.has(todayStr(cur))){
+      streak++;
+      cur.setDate(cur.getDate()-1);
+    }
+    if(streak === 0 && dateSet.size > 0){
+      var y = new Date(); y.setDate(y.getDate()-1);
+      if(dateSet.has(todayStr(y))){
+        cur = y;
+        while(dateSet.has(todayStr(cur))){ streak++; cur.setDate(cur.getDate()-1); }
+      }
+    }
+    document.getElementById("streakVal").textContent = streak + "일";
+
+    // 이번달 총 kcal
+    var now = new Date();
+    var monthKcal = sessions.filter(function(s){
+      var d = new Date(s.ts);
+      return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+    }).reduce(function(a,s){ return a+s.kcal; }, 0);
+    document.getElementById("monthKcal").textContent = Math.round(monthKcal);
+
+    document.getElementById("totalSessions").textContent = sessions.length + "회";
+    var avg = sessions.length ? Math.round(sessions.reduce(function(a,s){return a+s.kcal;},0)/sessions.length) : 0;
+    document.getElementById("avgKcal").textContent = avg;
+
+    // 체중 & 목표
+    var wlog = loadWeightLog();
+    var curWeight = wlog.length ? wlog[wlog.length-1].weight : state.settings.weight;
+    var target = state.settings.target;
+    var startWeight = wlog.length ? wlog[0].weight : state.settings.weight;
+    document.getElementById("curWeightVal").textContent = curWeight + " kg";
+    document.getElementById("targetWeightVal").textContent = target + " kg";
+
+    var totalToLose = startWeight - target;
+    var lostSoFar = startWeight - curWeight;
+    var pct = totalToLose > 0 ? Math.min(100, Math.max(0, Math.round((lostSoFar/totalToLose)*100))) : (curWeight<=target ? 100 : 0);
+    document.getElementById("weightProgressBar").style.width = pct + "%";
+    var remain = (curWeight - target);
+    document.getElementById("weightProgressLabel").textContent =
+      remain > 0 ? ("목표까지 " + remain.toFixed(1) + "kg 남았어요 (진행률 " + pct + "%)") : "🎉 목표 체중 달성!";
+
+    var h = state.settings.height/100;
+    var bmi = curWeight / (h*h);
+    document.getElementById("curBmi").textContent = bmi.toFixed(1);
+    var badge = document.getElementById("bmiBadge");
+    if(bmi < 23){ badge.textContent="정상"; badge.className="badge good"; }
+    else if(bmi < 25){ badge.textContent="과체중"; badge.className="badge warn"; }
+    else { badge.textContent="비만"; badge.className="badge warn"; }
+
+    // 기록 리스트
+    var histCard = document.getElementById("historyCard");
+    if(sessions.length === 0){
+      histCard.innerHTML = '<div class="empty">아직 기록이 없어요. 오늘 운동을 체크하고 저장해보세요!</div>';
+    } else {
+      histCard.innerHTML = "";
+      sessions.slice().reverse().slice(0,30).forEach(function(s){
+        var row = document.createElement("div");
+        row.className = "hist-item";
+        row.innerHTML =
+          '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + ' · ' + s.doneCount + '/' + s.totalSteps + '</span></div>' +
+          '<div class="r"><span class="k">' + s.kcal + ' kcal</span><br><span class="m">' + s.min + '분</span></div>' +
+          '<button class="del" data-ts="' + s.ts + '">삭제</button>';
+        histCard.appendChild(row);
+      });
+      histCard.querySelectorAll(".del").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var ts = parseFloat(btn.dataset.ts);
+          var list = loadSessions().filter(function(s){ return s.ts !== ts; });
+          saveSessions(list);
+          renderStats();
+        });
+      });
+    }
+  }
+
+  // ---------- 설정 뷰 ----------
+  function renderSettings(){
+    document.getElementById("heightInput").value = state.settings.height;
+    document.getElementById("weightInput").value = state.settings.weight;
+    document.getElementById("targetInput").value = state.settings.target;
+    renderWeightLogList();
+  }
+
+  document.getElementById("saveSettingsBtn").addEventListener("click", function(){
+    state.settings.height = parseFloat(document.getElementById("heightInput").value) || 176;
+    state.settings.weight = parseFloat(document.getElementById("weightInput").value) || 83;
+    state.settings.target = parseFloat(document.getElementById("targetInput").value) || 73;
+    saveSettings();
+    renderSteps();
+    var btn = document.getElementById("saveSettingsBtn");
+    var orig = btn.textContent;
+    btn.textContent = "✔ 저장됨";
+    setTimeout(function(){ btn.textContent = orig; }, 1200);
+  });
+
+  document.getElementById("addWeightLogBtn").addEventListener("click", function(){
+    var v = parseFloat(document.getElementById("weightLogInput").value);
+    if(!v) return;
+    var list = loadWeightLog();
+    list.push({date: todayStr(), weight: v, ts: Date.now()});
+    saveWeightLog(list);
+    state.settings.weight = v;
+    saveSettings();
+    document.getElementById("weightLogInput").value = "";
+    renderWeightLogList();
+    renderSteps();
+  });
+
+  function renderWeightLogList(){
+    var list = loadWeightLog().slice().reverse().slice(0,10);
+    var el = document.getElementById("weightLogList");
+    if(list.length === 0){ el.innerHTML = '<div class="empty" style="padding:10px 0;">체중 기록이 없어요.</div>'; return; }
+    el.innerHTML = list.map(function(w){
+      return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);"><span>' + w.date + '</span><span>' + w.weight + ' kg</span></div>';
+    }).join("");
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(confirm("모든 운동 기록과 체중 기록을 삭제할까요?")){
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_WEIGHTLOG);
+      renderStats(); renderWeightLogList();
+    }
+  });
+
+  // ---------- 초기화 ----------
+  document.getElementById("todayLabel").textContent = new Date().toLocaleDateString("ko-KR", {year:"numeric", month:"long", day:"numeric", weekday:"long"});
+  renderSteps();
+
+  // ---------- 서비스워커 등록 (PWA) ----------
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("./sw.js").catch(function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>
