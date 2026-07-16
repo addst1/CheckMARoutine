@@ -35,10 +35,16 @@
   .view{display:none;}
   .view.active{display:block;animation:fade .18s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-  .seg{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-  .seg::-webkit-scrollbar{display:none;}
-  .seg button{flex:0 0 auto;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--sub);font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);}
-  .seg button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .seg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0 14px;}
+  .seg-grid button{padding:12px 8px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--sub);font-size:13.5px;font-weight:700;box-shadow:var(--shadow);}
+  .seg-grid button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .mini-seg{display:flex;gap:6px;margin-bottom:10px;}
+  .mini-seg button{flex:1;padding:8px 0;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--sub);font-size:12.5px;font-weight:700;}
+  .mini-seg button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .date-row-label{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;}
+  .date-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:9px 10px;font-size:13.5px;box-shadow:var(--shadow);}
+  .date-today-btn{width:auto;flex:0 0 auto;padding:9px 12px;margin-top:0;font-size:12.5px;border-radius:12px;}
   .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
   .step{padding:13px 0;border-bottom:1px solid var(--border);}
   .step:last-child{border-bottom:none;}
@@ -116,11 +122,17 @@
 <main id="mainArea">
   <!-- 오늘 뷰 -->
   <div class="view active" id="view-today">
-    <div class="seg" id="routineSeg">
-      <button data-routine="basic" class="active">🏃 기본 64빌딩</button>
-      <button data-routine="travel">🏨 출장용 호텔</button>
-      <button data-routine="cycle">🚴 자전거 회복</button>
+    <div class="seg-grid" id="routineSeg">
+      <button data-routine="basic" class="active">🏃 기본</button>
+      <button data-routine="travel">🏨 출장</button>
+      <button data-routine="cycle">🚴 자전거</button>
       <button data-routine="outdoor">🏋️ 아스장</button>
+    </div>
+
+    <div class="date-row">
+      <span class="date-row-label">기록 날짜</span>
+      <input type="date" id="logDateInput" class="date-input">
+      <button class="btn secondary date-today-btn" id="setTodayBtn">오늘로</button>
     </div>
 
     <div class="summary">
@@ -136,14 +148,19 @@
 
     <div class="card" id="stepsCard"></div>
 
-    <button class="btn" id="saveBtn">오늘 운동 저장</button>
+    <button class="btn" id="saveBtn">이 날짜로 저장</button>
     <div id="savedNote" style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;"></div>
   </div>
 
   <!-- 통계 뷰 -->
   <div class="view" id="view-stats">
-    <h2>이번 주 소모 칼로리</h2>
+    <h2>소모 칼로리 누계</h2>
     <div class="card">
+      <div class="mini-seg" id="periodSeg">
+        <button data-period="week" class="active">주간</button>
+        <button data-period="month">월간</button>
+      </div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">이번 <span id="periodNoun">주</span> 누계 <span id="periodTotalLabel" style="font-weight:800;color:var(--accent-dark);font-size:16px;">0 kcal</span></div>
       <div class="bars" id="weekBars"></div>
     </div>
 
@@ -292,20 +309,22 @@
           tip:"💡 상체는 고정하고 하체(엉덩이·허리)만 좌우로 튼다는 느낌으로 움직이면 옆구리 라인에 효과적이에요."},
         {id:"rowing", type:"sets", label:"③ 온몸 노젓기", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 다리로 미는 힘과 팔로 당기는 힘을 함께 써야 전신 자극이 커요. 노를 젓듯 리듬감 있게!"},
-        {id:"chair_press", type:"sets", label:"④ 온몸 팔 밀어 올리기", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+        {id:"pullbar_row", type:"sets", label:"④ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true,
+          tip:"💡 당길 때 어깨를 으쓱하지 말고 견갑골을 모으는 느낌으로! 반동 없이 천천히가 등 자극에 더 효과적이에요."},
+        {id:"chair_press", type:"sets", label:"⑤ 온몸 팔 밀어 올리기", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 숨을 내쉬며 밀어 올리고, 들이마시며 천천히 제자리로. 어깨보다 가슴·팔로 미는 느낌을 유지하세요."},
-        {id:"waist_twist", type:"sets", label:"⑤ 허리 비틀기", setDef:"1세트 = 20회", met:3, defaultSets:2, minPerSet:1, track:true,
+        {id:"waist_twist", type:"sets", label:"⑥ 허리 비틀기", setDef:"1세트 = 20회", met:3, defaultSets:2, minPerSet:1, track:true,
           tip:"💡 상체를 세게 홱 돌리지 말고, 편안한 회전 범위 안에서 천천히 좌우로 비틀어주세요."},
-        {id:"situp", type:"sets", label:"⑥ 윗몸 일으키기", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+        {id:"situp", type:"sets", label:"⑦ 윗몸 일으키기", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 목을 손으로 당기지 말고 복부 힘으로 상체를 들어올리세요. 반동 사용은 금물!"},
-        {id:"leg_extension", type:"sets", label:"⑦ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
+        {id:"leg_extension", type:"sets", label:"⑧ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 등을 등받이에 딱 붙이고, 무릎을 다 편 상태에서 1초 멈췄다가 천천히 내려오면 허벅지 앞쪽에 자극이 잘 들어와요."},
-        {id:"back_stretch", type:"plain", label:"⑧ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
+        {id:"back_stretch", type:"plain", label:"⑨ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
           tip:"💡 운동 마무리로 천천히 등과 허리를 늘려주며 호흡을 고르세요."}
       ]
     }
   };
-  var CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧"];
+  var CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];
 
   var LS_KEY = "wc_sessions_v2";
   var LS_SETTINGS = "wc_settings_v2";
@@ -358,6 +377,19 @@
     });
   }
   initStepState();
+
+  // ---------- 기록 날짜 (과거 기록 백필용) ----------
+  state.selectedDate = todayStr();
+  var logDateInput = document.getElementById("logDateInput");
+  logDateInput.value = state.selectedDate;
+  logDateInput.max = todayStr();
+  logDateInput.addEventListener("change", function(){
+    state.selectedDate = logDateInput.value || todayStr();
+  });
+  document.getElementById("setTodayBtn").addEventListener("click", function(){
+    state.selectedDate = todayStr();
+    logDateInput.value = state.selectedDate;
+  });
 
   // ---------- 탭 전환 (클릭 + 스와이프) ----------
   var VIEW_ORDER = ["today","stats","settings"];
@@ -594,9 +626,11 @@
       return;
     }
     var sessions = loadSessions();
+    var sessionDate = state.selectedDate || todayStr();
+    var sessionTs = new Date(sessionDate + "T12:00:00").getTime();
     sessions.push({
-      date: todayStr(),
-      ts: Date.now(),
+      date: sessionDate,
+      ts: sessionTs,
       routine: state.routine,
       routineName: ROUTINES[state.routine].name,
       doneCount: doneCount,
@@ -607,40 +641,84 @@
       detail: detail
     });
     saveSessions(sessions);
-    document.getElementById("savedNote").textContent = "✔ 저장 완료! (" + Math.round(totalKcal) + " kcal)";
-    setTimeout(function(){ document.getElementById("savedNote").textContent = ""; }, 2500);
+    document.getElementById("savedNote").textContent = "✔ " + sessionDate + " 기록 저장 완료! (" + Math.round(totalKcal) + " kcal)";
+    setTimeout(function(){ document.getElementById("savedNote").textContent = ""; }, 3000);
   });
 
   // ---------- 통계 뷰 ----------
-  function renderStats(){
-    var sessions = loadSessions();
+  state.statsPeriod = "week";
 
-    // 최근 7일 바 차트
-    var days = [];
-    for(var i=6; i>=0; i--){
-      var d = new Date();
-      d.setDate(d.getDate()-i);
-      days.push(d);
-    }
+  function renderPeriodChart(sessions){
     var byDate = {};
-    sessions.forEach(function(s){
-      byDate[s.date] = (byDate[s.date] || 0) + s.kcal;
-    });
-    var maxKcal = Math.max.apply(null, days.map(function(d){ return byDate[todayStr(d)] || 0; }).concat([1]));
+    sessions.forEach(function(s){ byDate[s.date] = (byDate[s.date] || 0) + s.kcal; });
     var barsEl = document.getElementById("weekBars");
     barsEl.innerHTML = "";
-    days.forEach(function(d){
-      var ds = todayStr(d);
-      var kcal = byDate[ds] || 0;
-      var h = Math.max(3, Math.round((kcal / maxKcal) * 100));
-      var col = document.createElement("div");
-      col.className = "bar-col";
-      col.innerHTML =
-        (kcal > 0 ? '<div class="vlabel">' + kcal + '</div>' : '<div class="vlabel">&nbsp;</div>') +
-        '<div class="bar' + (kcal>0 ? ' has' : '') + '" style="height:' + h + '%"></div>' +
-        '<div class="dlabel">' + ["일","월","화","수","목","금","토"][d.getDay()] + '</div>';
-      barsEl.appendChild(col);
-    });
+    var total = 0;
+
+    if(state.statsPeriod === "month"){
+      document.getElementById("periodNoun").textContent = "달";
+      var now = new Date();
+      var year = now.getFullYear(), month = now.getMonth();
+      var daysInMonth = new Date(year, month+1, 0).getDate();
+      var buckets = [0,0,0,0,0];
+      for(var day=1; day<=daysInMonth; day++){
+        var ds = year+"-"+String(month+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+        buckets[Math.ceil(day/7)-1] += byDate[ds] || 0;
+      }
+      var usedBuckets = Math.ceil(daysInMonth/7);
+      var maxB = Math.max.apply(null, buckets.slice(0, usedBuckets).concat([1]));
+      for(var b=0; b<usedBuckets; b++){
+        var kcalB = Math.round(buckets[b]);
+        total += kcalB;
+        var hB = Math.max(3, Math.round((kcalB/maxB)*100));
+        var colB = document.createElement("div");
+        colB.className = "bar-col";
+        colB.innerHTML =
+          (kcalB > 0 ? '<div class="vlabel">' + kcalB + '</div>' : '<div class="vlabel">&nbsp;</div>') +
+          '<div class="bar' + (kcalB>0 ? ' has' : '') + '" style="height:' + hB + '%"></div>' +
+          '<div class="dlabel">' + (b+1) + '주</div>';
+        barsEl.appendChild(colB);
+      }
+    } else {
+      document.getElementById("periodNoun").textContent = "주";
+      var todayD = new Date();
+      var dow = todayD.getDay();
+      var diffToMonday = (dow === 0 ? -6 : 1 - dow);
+      var monday = new Date(todayD);
+      monday.setDate(todayD.getDate() + diffToMonday);
+      var weekDays = [];
+      for(var wi=0; wi<7; wi++){ var dd = new Date(monday); dd.setDate(monday.getDate()+wi); weekDays.push(dd); }
+      var maxKcal = Math.max.apply(null, weekDays.map(function(d){ return byDate[todayStr(d)] || 0; }).concat([1]));
+      var dowLabels = ["월","화","수","목","금","토","일"];
+      weekDays.forEach(function(d, idx){
+        var ds = todayStr(d);
+        var kcal = byDate[ds] || 0;
+        total += kcal;
+        var h = Math.max(3, Math.round((kcal / maxKcal) * 100));
+        var col = document.createElement("div");
+        col.className = "bar-col";
+        col.innerHTML =
+          (kcal > 0 ? '<div class="vlabel">' + kcal + '</div>' : '<div class="vlabel">&nbsp;</div>') +
+          '<div class="bar' + (kcal>0 ? ' has' : '') + '" style="height:' + h + '%"></div>' +
+          '<div class="dlabel">' + dowLabels[idx] + '</div>';
+        barsEl.appendChild(col);
+      });
+    }
+    document.getElementById("periodTotalLabel").textContent = Math.round(total) + " kcal";
+  }
+
+  document.getElementById("periodSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-period]");
+    if(!btn) return;
+    document.querySelectorAll("#periodSeg button").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    state.statsPeriod = btn.dataset.period;
+    renderPeriodChart(loadSessions());
+  });
+
+  function renderStats(){
+    var sessions = loadSessions();
+    renderPeriodChart(sessions);
 
     // 연속 운동일
     var dateSet = new Set(sessions.map(function(s){ return s.date; }));
