@@ -41,6 +41,17 @@
   .mini-seg{display:flex;gap:6px;margin-bottom:10px;}
   .mini-seg button{flex:1;padding:8px 0;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--sub);font-size:12.5px;font-weight:700;}
   .mini-seg button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .cal-nav button{background:var(--card2);border:none;width:30px;height:30px;border-radius:9px;font-size:15px;color:var(--text);font-weight:700;}
+  .cal-title{font-size:13.5px;font-weight:700;}
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .cal-dow{font-size:10.5px;color:var(--sub);text-align:center;padding-bottom:4px;font-weight:600;}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:12px;color:var(--text);background:var(--card2);}
+  .cal-day.empty{background:none;}
+  .cal-day.has{background:var(--accent);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(34,197,94,.35);}
+  .cal-day.today{box-shadow:0 0 0 2px var(--text);}
+  .cal-day.has.today{box-shadow:0 0 0 2px var(--text), 0 2px 6px rgba(34,197,94,.35);}
+  .cal-day.selected{background:var(--accent-dark) !important;color:#fff !important;box-shadow:0 0 0 2px var(--accent-dark) !important;}
   .date-row{display:flex;align-items:stretch;gap:8px;margin-bottom:12px;}
   .date-row-label{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;display:flex;align-items:center;}
   .date-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:0 10px;font-size:13.5px;box-shadow:var(--shadow);height:40px;box-sizing:border-box;}
@@ -211,6 +222,20 @@
       <div style="margin-top:8px;">🚨 어지럼증, 무기력, 생리불순 등이 생기면 감량 속도를 늦추고 필요하면 병원 상담을 받으세요.</div>
     </div>
 
+    <h2>운동 캘린더</h2>
+    <div class="card">
+      <div class="cal-nav">
+        <button id="calPrevBtn" aria-label="이전 달">‹</button>
+        <div class="cal-title" id="calTitle"></div>
+        <button id="calNextBtn" aria-label="다음 달">›</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:8px;display:flex;align-items:center;gap:6px;">
+        <span style="width:10px;height:10px;border-radius:4px;background:var(--accent);display:inline-block;"></span> 운동한 날
+        <span style="margin-left:10px;" id="calFilterNote"></span>
+      </div>
+    </div>
+
     <h2>운동 기록</h2>
     <div class="card" id="historyCard"></div>
   </div>
@@ -287,8 +312,8 @@
       steps: [
         {id:"stairs", type:"floors", label:"① 아파트 계단 오르기", met:8, minPerFloor:0.2, defaultFloors:40, track:true,
           tip:"💡 발 전체로 딛고 무릎이 발끝을 넘지 않게 오르면 무릎 부담이 줄어요. 난간은 가볍게만 잡고 리듬있게!"},
-        {id:"lunge_lap", type:"sets", label:"② 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true,
-          tip:"💡 앞무릎이 발끝보다 앞으로 나가지 않게, 상체는 곧게 세운 채로 걸으면 허벅지·엉덩이 자극이 잘 들어와요."},
+        {id:"lunge_lap", type:"sets", label:"② 리버스 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음 (좌우 번갈아 뒤로)", met:4.5, defaultSets:1, minPerSet:2, track:true,
+          tip:"💡 앞으로 내딛는 대신 한 발을 뒤로 빼며 앉으세요. 무릎이 발끝을 덜 넘어가서 무릎 부담이 훨씬 적어요. 상체는 곧게, 시선은 정면!"},
         {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true,
           tip:"💡 당길 때 어깨를 으쓱하지 말고 견갑골을 모으는 느낌으로! 반동 없이 천천히가 등 자극에 더 효과적이에요."},
         {id:"finish_stairs", type:"plain", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true,
@@ -300,8 +325,8 @@
       steps: [
         {id:"treadmill", type:"sets", label:"① 러닝머신 경사 10~12도 걷기", setDef:"1세트 = 20분 걷기 (4~5km/h)", met:7, defaultSets:1, minPerSet:20, track:true,
           tip:"💡 손잡이를 꽉 잡지 말고 팔을 자연스럽게 흔들며 걸어야 칼로리 소모 효과가 커져요."},
-        {id:"dumbbell_lunge", type:"sets", label:"② 덤벨 런지 워킹", setDef:"1세트 = 20걸음", met:5, defaultSets:1, minPerSet:2, track:true,
-          tip:"💡 복도가 좁으면 제자리 런지로 대체해도 효과는 비슷해요."},
+        {id:"dumbbell_lunge", type:"sets", label:"② 덤벨 리버스 런지", setDef:"1세트 = 20걸음 (좌우 번갈아 뒤로)", met:4.5, defaultSets:1, minPerSet:2, track:true,
+          tip:"💡 한 발을 뒤로 빼며 앉는 방식이라 무릎 부담이 적어요. 복도가 좁으면 제자리에서 좌우 번갈아 해도 효과는 비슷해요."},
         {id:"back_row", type:"sets", label:"③ 랫풀다운 / 원암 덤벨 로우", setDef:"1세트 = 15개", met:5, defaultSets:3, minPerSet:2, track:true,
           tip:"💡 무게보다 자세가 우선! 반동 없이 천천히 당기고 내리세요."},
         {id:"shower", type:"plain", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false,
@@ -803,9 +828,80 @@
     renderPeriodChart(loadSessions());
   });
 
+  // ---------- 운동 캘린더 ----------
+  state.calendarDate = new Date();
+  state.calendarSelectedDate = null;
+
+  function renderCalendar(sessions){
+    var byDate = {};
+    sessions.forEach(function(s){ byDate[s.date] = (byDate[s.date] || 0) + s.kcal; });
+
+    var year = state.calendarDate.getFullYear();
+    var month = state.calendarDate.getMonth();
+    document.getElementById("calTitle").textContent = year + "년 " + (month+1) + "월";
+
+    var firstDow = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month+1, 0).getDate();
+    var grid = document.getElementById("calendarGrid");
+    grid.innerHTML = "";
+    ["일","월","화","수","목","금","토"].forEach(function(dw){
+      var el = document.createElement("div");
+      el.className = "cal-dow";
+      el.textContent = dw;
+      grid.appendChild(el);
+    });
+    for(var e=0; e<firstDow; e++){
+      var empty = document.createElement("div");
+      empty.className = "cal-day empty";
+      grid.appendChild(empty);
+    }
+    var todayStrVal = todayStr();
+    for(var day=1; day<=daysInMonth; day++){
+      var ds = year+"-"+String(month+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+      var hasWorkout = !!byDate[ds];
+      var cell = document.createElement("div");
+      cell.className = "cal-day" + (hasWorkout ? " has" : "") + (ds === todayStrVal ? " today" : "") + (ds === state.calendarSelectedDate ? " selected" : "");
+      cell.textContent = day;
+      if(hasWorkout){
+        cell.dataset.date = ds;
+        cell.addEventListener("click", function(){
+          var clicked = this.dataset.date;
+          state.calendarSelectedDate = (state.calendarSelectedDate === clicked) ? null : clicked;
+          renderStats();
+        });
+      }
+      grid.appendChild(cell);
+    }
+
+    var note = document.getElementById("calFilterNote");
+    if(state.calendarSelectedDate){
+      note.innerHTML = state.calendarSelectedDate + ' 기록만 보는 중 · <a href="#" id="calClearFilter" style="color:var(--accent-dark);font-weight:700;">전체보기</a>';
+      var clearLink = document.getElementById("calClearFilter");
+      if(clearLink){
+        clearLink.addEventListener("click", function(ev){
+          ev.preventDefault();
+          state.calendarSelectedDate = null;
+          renderStats();
+        });
+      }
+    } else {
+      note.textContent = "";
+    }
+  }
+
+  document.getElementById("calPrevBtn").addEventListener("click", function(){
+    state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+    renderCalendar(loadSessions());
+  });
+  document.getElementById("calNextBtn").addEventListener("click", function(){
+    state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+    renderCalendar(loadSessions());
+  });
+
   function renderStats(){
     var sessions = loadSessions();
     renderPeriodChart(sessions);
+    renderCalendar(sessions);
 
     // 연속 운동일
     var dateSet = new Set(sessions.map(function(s){ return s.date; }));
@@ -872,13 +968,18 @@
     else if(bmi < 25){ badge.textContent="과체중"; badge.className="badge warn"; }
     else { badge.textContent="비만"; badge.className="badge warn"; }
 
-    // 기록 리스트
+    // 기록 리스트 (캘린더에서 날짜를 선택했으면 해당 날짜만 표시)
     var histCard = document.getElementById("historyCard");
-    if(sessions.length === 0){
-      histCard.innerHTML = '<div class="empty">아직 기록이 없어요. 오늘 운동을 체크하고 저장해보세요!</div>';
+    var filteredSessions = state.calendarSelectedDate
+      ? sessions.filter(function(s){ return s.date === state.calendarSelectedDate; })
+      : sessions;
+    if(filteredSessions.length === 0){
+      histCard.innerHTML = state.calendarSelectedDate
+        ? '<div class="empty">' + state.calendarSelectedDate + '에는 기록이 없어요.</div>'
+        : '<div class="empty">아직 기록이 없어요. 오늘 운동을 체크하고 저장해보세요!</div>';
     } else {
       histCard.innerHTML = "";
-      sessions.slice().reverse().slice(0,30).forEach(function(s){
+      filteredSessions.slice().reverse().slice(0,30).forEach(function(s){
         var row = document.createElement("div");
         row.className = "hist-item";
         var routineSteps = (ROUTINES[s.routine] && ROUTINES[s.routine].steps) || [];
@@ -981,11 +1082,13 @@
   }
 
   document.getElementById("resetBtn").addEventListener("click", function(){
-    if(confirm("모든 운동 기록과 체중 기록을 삭제할까요?")){
-      localStorage.removeItem(LS_KEY);
-      localStorage.removeItem(LS_WEIGHTLOG);
-      renderStats(); renderWeightLogList();
-    }
+    if(!confirm("정말 모든 운동 기록과 체중 기록을 삭제할까요? (1/3)")) return;
+    if(!confirm("한 번 삭제하면 되돌릴 수 없어요. 계속할까요? (2/3)")) return;
+    if(!confirm("마지막 확인이에요. 지금까지 쌓은 모든 기록이 사라집니다. 정말 삭제할까요? (3/3)")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_WEIGHTLOG);
+    state.calendarSelectedDate = null;
+    renderStats(); renderWeightLogList();
   });
 
   // ---------- 초기화 ----------
