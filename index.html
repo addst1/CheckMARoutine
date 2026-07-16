@@ -41,10 +41,12 @@
   .mini-seg{display:flex;gap:6px;margin-bottom:10px;}
   .mini-seg button{flex:1;padding:8px 0;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--sub);font-size:12.5px;font-weight:700;}
   .mini-seg button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-  .date-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-  .date-row-label{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;}
-  .date-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:9px 10px;font-size:13.5px;box-shadow:var(--shadow);}
-  .date-today-btn{width:auto;flex:0 0 auto;padding:9px 12px;margin-top:0;font-size:12.5px;border-radius:12px;}
+  .date-row{display:flex;align-items:stretch;gap:8px;margin-bottom:12px;}
+  .date-row-label{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;display:flex;align-items:center;}
+  .date-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:0 10px;font-size:13.5px;box-shadow:var(--shadow);height:40px;box-sizing:border-box;}
+  button.date-today-btn{width:auto !important;flex:0 0 auto;padding:0 14px !important;margin-top:0 !important;font-size:12.5px;border-radius:12px;height:40px;box-sizing:border-box;}
+  .goal-bar-wrap{margin:0 0 14px;}
+  .goal-bar-label{font-size:11.5px;color:var(--sub);margin-bottom:5px;display:flex;justify-content:space-between;font-weight:600;}
   .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
   .step{padding:13px 0;border-bottom:1px solid var(--border);}
   .step:last-child{border-bottom:none;}
@@ -127,6 +129,8 @@
       <button data-routine="travel">🏨 출장</button>
       <button data-routine="cycle">🚴 자전거</button>
       <button data-routine="outdoor">🏋️ 아스장</button>
+      <button data-routine="pullbar">🪝 철봉</button>
+      <button data-routine="tubing">🎗️ 밴드</button>
     </div>
 
     <div class="date-row">
@@ -146,6 +150,11 @@
       </div>
     </div>
 
+    <div class="goal-bar-wrap">
+      <div class="goal-bar-label"><span>오늘 목표</span><span id="dailyGoalText">0 / 0 kcal</span></div>
+      <div class="progress-wrap"><div class="progress-bar" id="dailyGoalBar" style="width:0%"></div></div>
+    </div>
+
     <div class="card" id="stepsCard"></div>
 
     <button class="btn" id="saveBtn">이 날짜로 저장</button>
@@ -162,6 +171,8 @@
       </div>
       <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">이번 <span id="periodNoun">주</span> 누계 <span id="periodTotalLabel" style="font-weight:800;color:var(--accent-dark);font-size:16px;">0 kcal</span></div>
       <div class="bars" id="weekBars"></div>
+      <div class="progress-wrap" style="margin-top:12px;"><div class="progress-bar" id="periodGoalBar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px;" id="periodGoalLabel"></div>
     </div>
 
     <div class="stat-grid">
@@ -221,6 +232,14 @@
         1차 목표는 <b style="color:var(--text)">73kg (BMI 23.6)</b>, 최종 목표는 <b style="color:var(--text)">68kg (BMI 22, 정상 범위)</b>를 추천드려요. 계단은 현재 40층에서 최종 60층을 목표로 잡아뒀어요.
       </div>
       <button class="btn" id="saveSettingsBtn" style="margin-top:14px;">저장</button>
+    </div>
+
+    <h2>운동 목표 칼로리</h2>
+    <div class="card">
+      <label class="field">주간 목표 소모 칼로리 (kcal)</label>
+      <input type="number" class="wide" id="weeklyGoalInput" value="1500" step="50">
+      <div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6;" id="goalDerivedLabel"></div>
+      <button class="btn" id="saveGoalBtn" style="margin-top:14px;">저장</button>
     </div>
 
     <h2>체중 기록 추가</h2>
@@ -322,6 +341,36 @@
         {id:"back_stretch", type:"plain", label:"⑨ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
           tip:"💡 운동 마무리로 천천히 등과 허리를 늘려주며 호흡을 고르세요."}
       ]
+    },
+    pullbar: {
+      name: "철봉 행 & 턱걸이",
+      steps: [
+        {id:"dead_hang", type:"sets", label:"① 데드행 (Dead Hang)", setDef:"1세트 = 20~30초 매달리기", met:3, defaultSets:3, minPerSet:0.5, track:true,
+          tip:"💡 어깨가 귀에 닿지 않게 힘을 빼고 팔만으로 축 매달리세요. 그립·전완 근지구력을 키우는 기본기예요."},
+        {id:"active_hang", type:"sets", label:"② 액티브행 (Active Hang)", setDef:"1세트 = 15~20초 매달리기", met:3.5, defaultSets:3, minPerSet:0.33, track:true,
+          tip:"💡 어깨뼈를 아래로 끌어내리듯 견갑골을 살짝 조여주세요. 턱걸이 첫 동작(스캐퓰러 풀업)과 같은 자세예요."},
+        {id:"pullup", type:"sets", label:"③ 턱걸이 (최종 목표)", setDef:"1세트 = 최대 반복 횟수", met:8, defaultSets:1, minPerSet:1, track:true,
+          tip:"💡 아직 어렵다면 체크를 해제하거나 0회로 두셔도 괜찮아요! 데드행·액티브행이 편해지면 밴드 어시스트나 점프 후 천천히 내려오는 네거티브 턱걸이부터 시도해보세요."},
+        {id:"pullbar_stretch", type:"plain", label:"④ 마무리 스트레칭 (전완·어깨)", met:2, min:2, track:true,
+          tip:"💡 손목을 반대손으로 살짝 당겨 전완을 풀어주고, 어깨도 크게 돌려 마무리하세요."}
+      ]
+    },
+    tubing: {
+      name: "멀티 튜빙밴드 루틴",
+      steps: [
+        {id:"band_squat_press", type:"sets", label:"① 밴드 스쿼트 오버헤드 프레스", setDef:"1세트 = 12회", met:5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 밴드 중앙을 양발로 밟고 스쿼트 자세에서 일어나며 손잡이를 머리 위로 밀어 올리세요. 하체+어깨 동시 자극!"},
+        {id:"band_row", type:"sets", label:"② 밴드 로우 (문 고정)", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 밴드를 문 고정 걸이(도어앵커)로 가슴 높이에 걸고, 바를 배꼽 쪽으로 당기며 견갑골을 모으세요."},
+        {id:"band_chest_press", type:"sets", label:"③ 밴드 체스트 프레스", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 밴드를 등 뒤(어깨 높이)로 고정하고 앞으로 밀어내세요. 팔꿈치를 다 펴지 말고 살짝 남겨 관절 부담을 줄이세요."},
+        {id:"band_bicep_curl", type:"sets", label:"④ 밴드 바이셉 컬", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 양발로 밴드를 밟고 팔꿈치를 고정한 채 손잡이만 들어올리세요. 반동 없이 천천히!"},
+        {id:"band_woodchop", type:"sets", label:"⑤ 밴드 우드찹 (코어)", setDef:"1세트 = 12회 (양쪽 번갈아)", met:4, defaultSets:2, minPerSet:1.5, track:true,
+          tip:"💡 밴드를 높은 곳에 고정하고 대각선 아래로 크게 당겨 내리세요. 허리보다 몸통 회전으로 움직이면 옆구리에 잘 들어와요."},
+        {id:"band_stretch", type:"plain", label:"⑥ 마무리 스트레칭", met:2, min:3, track:true,
+          tip:"💡 사용 전 밴드에 갈라짐·손상이 없는지 확인하고, 고정 지점이 튼튼한지 항상 체크한 후 시작하세요."}
+      ]
     }
   };
   var CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];
@@ -341,7 +390,7 @@
       var s = JSON.parse(localStorage.getItem(LS_SETTINGS));
       if(s && s.height && s.weight) return s;
     }catch(e){}
-    return {height:176, weight:83, target:73, floorGoal:60};
+    return {height:176, weight:83, target:73, floorGoal:60, weeklyGoal:1500};
   }
   function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings)); }
 
@@ -610,6 +659,15 @@
     });
     document.getElementById("todayKcal").textContent = Math.round(totalKcal) + " kcal";
     document.getElementById("todayProgress").textContent = doneCount + "/" + steps.length;
+
+    // 오늘 목표 대비 진행률 (이미 저장된 세션 + 지금 입력 중인 값)
+    var d = state.selectedDate || todayStr();
+    var savedForDate = loadSessions().filter(function(s){ return s.date === d; }).reduce(function(a,s){ return a+s.kcal; }, 0);
+    var dailyTotal = savedForDate + Math.round(totalKcal);
+    var dailyGoal = Math.max(1, Math.round((state.settings.weeklyGoal || 1500) / 7));
+    var dailyPct = Math.min(100, Math.round((dailyTotal / dailyGoal) * 100));
+    document.getElementById("dailyGoalText").textContent = dailyTotal + " / " + dailyGoal + " kcal";
+    document.getElementById("dailyGoalBar").style.width = dailyPct + "%";
   }
 
   document.getElementById("saveBtn").addEventListener("click", function(){
@@ -727,6 +785,13 @@
       });
     }
     document.getElementById("periodTotalLabel").textContent = Math.round(total) + " kcal";
+
+    var weeklyGoal = state.settings.weeklyGoal || 1500;
+    var target = state.statsPeriod === "month" ? Math.round(weeklyGoal * 30 / 7) : weeklyGoal;
+    var gPct = Math.min(100, Math.round((total / target) * 100));
+    document.getElementById("periodGoalBar").style.width = gPct + "%";
+    document.getElementById("periodGoalLabel").textContent =
+      total >= target ? "🎉 목표 " + target + " kcal 달성!" : ("목표 " + target + " kcal 중 " + Math.round(total) + " kcal (" + gPct + "%)");
   }
 
   document.getElementById("periodSeg").addEventListener("click", function(e){
@@ -856,7 +921,17 @@
     document.getElementById("weightInput").value = state.settings.weight;
     document.getElementById("targetInput").value = state.settings.target;
     document.getElementById("floorGoalInput").value = state.settings.floorGoal || 60;
+    document.getElementById("weeklyGoalInput").value = state.settings.weeklyGoal || 1500;
+    updateGoalDerivedLabel();
     renderWeightLogList();
+  }
+
+  function updateGoalDerivedLabel(){
+    var wg = state.settings.weeklyGoal || 1500;
+    var daily = Math.round(wg/7);
+    var monthly = Math.round(wg*30/7);
+    document.getElementById("goalDerivedLabel").innerHTML =
+      "이 값을 기준으로 <b style='color:var(--text)'>하루 약 " + daily + " kcal</b>, <b style='color:var(--text)'>한 달 약 " + monthly + " kcal</b>를 자동 계산해서 오늘 화면과 통계에 목표 대비 진행률로 보여드려요.";
   }
 
   document.getElementById("saveSettingsBtn").addEventListener("click", function(){
@@ -867,6 +942,17 @@
     saveSettings();
     renderSteps();
     var btn = document.getElementById("saveSettingsBtn");
+    var orig = btn.textContent;
+    btn.textContent = "✔ 저장됨";
+    setTimeout(function(){ btn.textContent = orig; }, 1200);
+  });
+
+  document.getElementById("saveGoalBtn").addEventListener("click", function(){
+    state.settings.weeklyGoal = parseFloat(document.getElementById("weeklyGoalInput").value) || 1500;
+    saveSettings();
+    updateGoalDerivedLabel();
+    renderSteps();
+    var btn = document.getElementById("saveGoalBtn");
     var orig = btn.textContent;
     btn.textContent = "✔ 저장됨";
     setTimeout(function(){ btn.textContent = orig; }, 1200);
