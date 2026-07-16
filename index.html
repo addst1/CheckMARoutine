@@ -3,108 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#f6f8fb">
 <title>운동 체크</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <style>
   :root{
-    --bg:#0f1115; --card:#1a1d24; --card2:#20242c; --accent:#4ade80; --accent2:#22c55e;
-    --text:#f3f4f6; --sub:#9ca3af; --danger:#f87171; --border:#2a2e37;
+    --bg:#f5f7fb; --card:#ffffff; --card2:#f1f4f9; --accent:#22c55e; --accent-dark:#15803d; --accent-soft:#e7f9ee;
+    --text:#1f2937; --sub:#6b7280; --danger:#ef4444; --danger-soft:#fee2e2; --border:#e7eaf0;
+    --blue-soft:#eaf3ff; --blue-text:#2563eb; --amber-soft:#fef6e0; --amber-text:#b45309;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 8px rgba(16,24,40,.05);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;}
-  body{padding-bottom:76px; min-height:100vh;}
-  header{position:sticky;top:0;z-index:10;background:rgba(15,17,21,0.92);backdrop-filter:blur(8px);padding:16px 16px 8px;border-bottom:1px solid var(--border);}
-  header h1{font-size:19px;margin:0 0 2px;}
-  header .date{font-size:13px;color:var(--sub);}
-  main{padding:14px 14px 20px;max-width:520px;margin:0 auto;}
-  .tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:#151821;border-top:1px solid var(--border);z-index:20;max-width:520px;margin:0 auto;}
-  .tabs button{flex:1;background:none;border:none;color:var(--sub);padding:10px 0 calc(10px + env(safe-area-inset-bottom));font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px;}
-  .tabs button.active{color:var(--accent);}
-  .tabs button .ic{font-size:19px;}
+  body{padding-bottom:80px; min-height:100vh;}
+  svg{display:block;}
+  header{position:sticky;top:0;z-index:10;background:rgba(245,247,251,0.92);backdrop-filter:blur(10px);padding:16px 16px 10px;}
+  header .htop{display:flex;align-items:center;justify-content:space-between;}
+  header h1{font-size:19px;margin:0;font-weight:700;}
+  header .date{font-size:12.5px;color:var(--sub);margin-top:2px;}
+  .dots{display:flex;gap:6px;}
+  .dots span{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .dots span.on{background:var(--accent);width:16px;border-radius:4px;transition:all .2s;}
+  main{padding:6px 14px 20px;max-width:520px;margin:0 auto;touch-action:pan-y;}
+  .tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--border);z-index:20;max-width:520px;margin:0 auto;}
+  .tabs button{flex:1;background:none;border:none;color:var(--sub);padding:8px 0 calc(8px + env(safe-area-inset-bottom));font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;}
+  .tabs button .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:var(--sub);}
+  .tabs button.active .ic{background:var(--accent-soft);color:var(--accent-dark);}
+  .tabs button.active{color:var(--accent-dark);}
   .view{display:none;}
-  .view.active{display:block;animation:fade .15s ease;}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .seg{display:flex;background:var(--card);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px;border:1px solid var(--border);}
-  .seg button{flex:1;padding:9px 0;border:none;border-radius:9px;background:none;color:var(--sub);font-size:13px;font-weight:600;}
-  .seg button.active{background:var(--accent);color:#0b1710;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
-  .step{padding:12px 0;border-bottom:1px solid var(--border);}
+  .view.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .seg{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .seg::-webkit-scrollbar{display:none;}
+  .seg button{flex:0 0 auto;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--sub);font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);}
+  .seg button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .step{padding:13px 0;border-bottom:1px solid var(--border);}
   .step:last-child{border-bottom:none;}
   .step-top{display:flex;gap:12px;align-items:flex-start;}
-  .check{width:26px;height:26px;flex:0 0 26px;border-radius:8px;border:2px solid #4b5563;display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;margin-top:2px;}
-  .check.on{background:var(--accent);border-color:var(--accent);color:#0b1710;}
+  .check{width:26px;height:26px;flex:0 0 26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:transparent;margin-top:2px;background:var(--card2);}
+  .check.on{background:var(--accent);border-color:var(--accent);color:#fff;}
   .step-body{flex:1;min-width:0;}
-  .step-label{font-size:14px;line-height:1.4;}
-  .step-sub{font-size:11px;color:var(--sub);margin-top:2px;}
-  .step-tip{font-size:11px;color:#93c5fd;margin-top:6px;line-height:1.5;background:#131c2b;border-radius:8px;padding:6px 8px;}
-  .step-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
-  .step-meta input[type=number]{width:56px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 6px;font-size:13px;text-align:center;}
+  .step-label{font-size:14px;line-height:1.4;font-weight:600;}
+  .step-sub{font-size:11.5px;color:var(--sub);margin-top:2px;}
+  .step-tip{font-size:11.5px;color:var(--blue-text);margin-top:8px;line-height:1.5;background:var(--blue-soft);border-radius:10px;padding:8px 10px;}
+  .step-meta{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap;}
+  .step-meta input[type=number]{width:56px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 6px;font-size:13px;text-align:center;}
   .step-meta span{font-size:12px;color:var(--sub);}
-  .kcal-pill{font-size:12px;background:#132417;color:var(--accent);padding:2px 8px;border-radius:20px;margin-left:auto;}
-  .stepper{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:9px;padding:3px;}
-  .stepbtn{width:28px;height:28px;border:none;border-radius:7px;background:var(--card);color:var(--text);font-size:16px;font-weight:700;line-height:1;}
-  .stepbtn:active{background:var(--accent);color:#0b1710;}
-  .stepval{font-size:13px;min-width:52px;text-align:center;font-weight:600;}
-  .floor-progress{margin-top:8px;background:var(--card2);border-radius:8px;height:8px;overflow:hidden;}
+  .kcal-pill{font-size:11.5px;background:var(--accent-soft);color:var(--accent-dark);padding:3px 9px;border-radius:20px;margin-left:auto;font-weight:600;}
+  .stepper{display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:10px;padding:3px;}
+  .stepbtn{width:28px;height:28px;border:none;border-radius:8px;background:#fff;color:var(--text);font-size:16px;font-weight:700;line-height:1;box-shadow:0 1px 2px rgba(16,24,40,.08);}
+  .stepbtn:active{background:var(--accent);color:#fff;}
+  .stepval{font-size:13px;min-width:52px;text-align:center;font-weight:700;}
+  .floor-progress{margin-top:9px;background:var(--card2);border-radius:8px;height:8px;overflow:hidden;}
   .floor-progress-bar{height:100%;background:var(--accent);border-radius:8px;transition:width .3s;}
   .floor-goal-label{font-size:11px;color:var(--sub);margin-top:5px;}
-  .summary{display:flex;justify-content:space-between;align-items:center;padding:14px;background:linear-gradient(135deg,#1e3324,#14201a);border-radius:14px;margin-bottom:14px;border:1px solid #24402b;}
-  .summary .big{font-size:26px;font-weight:700;color:var(--accent);}
-  .summary .lbl{font-size:12px;color:var(--sub);}
-  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#0b1710;font-weight:700;font-size:15px;margin-top:6px;}
-  .btn.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
-  .btn.ghost{background:none;color:var(--danger);border:1px solid #3a2323;}
-  h2{font-size:15px;margin:0 0 10px;color:var(--sub);font-weight:600;letter-spacing:.3px;}
+  .summary{display:flex;justify-content:space-between;align-items:center;padding:16px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:18px;margin-bottom:14px;box-shadow:0 6px 16px rgba(34,197,94,.28);}
+  .summary .big{font-size:26px;font-weight:800;color:#fff;}
+  .summary .lbl{font-size:12px;color:rgba(255,255,255,.85);}
+  .btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:14px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;font-size:15px;margin-top:6px;box-shadow:0 4px 10px rgba(34,197,94,.25);}
+  .btn.secondary{background:var(--card2);color:var(--text);box-shadow:none;}
+  .btn.ghost{background:var(--danger-soft);color:var(--danger);box-shadow:none;}
+  h2{font-size:14.5px;margin:4px 0 10px;color:var(--text);font-weight:700;display:flex;align-items:center;gap:6px;}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-  .stat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;}
-  .stat-box .v{font-size:20px;font-weight:700;}
-  .stat-box .l{font-size:11px;color:var(--sub);margin-top:2px;}
+  .stat-box{background:var(--card);border-radius:16px;padding:13px;box-shadow:var(--shadow);}
+  .stat-box .v{font-size:20px;font-weight:800;}
+  .stat-box .l{font-size:11px;color:var(--sub);margin-top:3px;display:flex;align-items:center;gap:4px;}
   .bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding:8px 4px 0;}
   .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
   .bar{width:100%;background:var(--card2);border-radius:6px 6px 0 0;position:relative;min-height:3px;}
   .bar.has{background:var(--accent);}
   .bar-col .dlabel{font-size:10px;color:var(--sub);margin-top:5px;}
-  .bar-col .vlabel{font-size:10px;color:var(--accent);margin-bottom:3px;}
+  .bar-col .vlabel{font-size:10px;color:var(--accent-dark);margin-bottom:3px;font-weight:700;}
   .hist-item{padding:12px 0;border-bottom:1px solid var(--border);}
   .hist-item:last-child{border-bottom:none;}
   .hist-top{display:flex;justify-content:space-between;align-items:flex-start;}
-  .hist-item .l{font-size:13px;}
+  .hist-item .l{font-size:13px;font-weight:600;}
   .hist-item .r{text-align:right;}
-  .hist-item .r .k{font-size:14px;font-weight:700;color:var(--accent);}
+  .hist-item .r .k{font-size:14px;font-weight:800;color:var(--accent-dark);}
   .hist-item .r .m{font-size:11px;color:var(--sub);}
-  .hist-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
-  .hist-badges{display:flex;gap:5px;}
+  .hist-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:9px;}
+  .hist-badges{display:flex;gap:5px;flex-wrap:wrap;}
   .step-badge{display:inline-flex;width:22px;height:22px;flex:0 0 22px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;background:var(--card2);color:var(--sub);}
-  .step-badge.done{background:var(--accent);color:#0b1710;font-weight:700;}
-  .del{background:none;border:none;color:var(--danger);font-size:12px;margin-left:10px;}
-  label.field{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px;}
-  input[type=number].wide, input[type=text].wide{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-size:15px;}
+  .step-badge.done{background:var(--accent);color:#fff;font-weight:700;}
+  .del{background:none;border:none;color:var(--danger);font-size:11.5px;font-weight:600;margin-left:10px;}
+  label.field{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px;font-weight:600;}
+  input[type=number].wide, input[type=text].wide{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px;font-size:15px;}
   .row2{display:flex;gap:10px;}
   .row2 > div{flex:1;}
   .empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 0;}
   .progress-wrap{margin-top:10px;background:var(--card2);border-radius:10px;height:10px;overflow:hidden;}
   .progress-bar{height:100%;background:var(--accent);border-radius:10px;transition:width .3s;}
-  .badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:20px;background:var(--card2);color:var(--sub);margin-left:6px;}
-  .badge.good{background:#132417;color:var(--accent);}
-  .badge.warn{background:#2b1f14;color:#fbbf24;}
+  .badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;background:var(--card2);color:var(--sub);margin-left:6px;font-weight:600;}
+  .badge.good{background:var(--accent-soft);color:var(--accent-dark);}
+  .badge.warn{background:var(--amber-soft);color:var(--amber-text);}
+  .icon-sm{width:15px;height:15px;flex:0 0 15px;}
 </style>
 </head>
 <body>
 <header>
-  <h1 id="headerTitle">💪 오늘의 운동</h1>
-  <div class="date" id="todayLabel"></div>
+  <div class="htop">
+    <div>
+      <h1 id="headerTitle">오늘의 운동</h1>
+      <div class="date" id="todayLabel"></div>
+    </div>
+    <div class="dots" id="viewDots"><span class="on"></span><span></span><span></span></div>
+  </div>
 </header>
 
-<main>
+<main id="mainArea">
   <!-- 오늘 뷰 -->
   <div class="view active" id="view-today">
     <div class="seg" id="routineSeg">
-      <button data-routine="basic" class="active">🏃 기본</button>
-      <button data-routine="travel">🏨 출장용</button>
-      <button data-routine="cycle">🚴 자전거</button>
+      <button data-routine="basic" class="active">🏃 기본 64빌딩</button>
+      <button data-routine="travel">🏨 출장용 호텔</button>
+      <button data-routine="cycle">🚴 자전거 회복</button>
+      <button data-routine="outdoor">🏋️ 아스장</button>
     </div>
 
     <div class="summary">
@@ -114,13 +130,13 @@
       </div>
       <div style="text-align:right">
         <div class="lbl">완료</div>
-        <div class="big" id="todayProgress" style="color:var(--text);font-size:20px">0/4</div>
+        <div class="big" id="todayProgress" style="font-size:20px">0/4</div>
       </div>
     </div>
 
     <div class="card" id="stepsCard"></div>
 
-    <button class="btn" id="saveBtn">✅ 오늘 운동 저장</button>
+    <button class="btn" id="saveBtn">오늘 운동 저장</button>
     <div id="savedNote" style="text-align:center;font-size:12px;color:var(--sub);margin-top:8px;"></div>
   </div>
 
@@ -141,8 +157,8 @@
     <h2>계단 오르기 최고 기록</h2>
     <div class="card">
       <div class="row2">
-        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최근 기록</div><div style="font-size:20px;font-weight:700;" id="lastFloors">-</div></div>
-        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최고 기록</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="bestFloors">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최근 기록</div><div style="font-size:20px;font-weight:800;" id="lastFloors">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">최고 기록</div><div style="font-size:20px;font-weight:800;color:var(--accent-dark)" id="bestFloors">-</div></div>
       </div>
       <div class="progress-wrap"><div class="progress-bar" id="floorsProgressBar" style="width:0%"></div></div>
       <div style="font-size:12px;color:var(--sub);margin-top:6px;" id="floorsProgressLabel"></div>
@@ -151,8 +167,8 @@
     <h2>체중 &amp; 목표 진행률</h2>
     <div class="card">
       <div class="row2">
-        <div><div class="lbl" style="font-size:11px;color:var(--sub)">현재 체중</div><div style="font-size:20px;font-weight:700;" id="curWeightVal">-</div></div>
-        <div><div class="lbl" style="font-size:11px;color:var(--sub)">목표 체중</div><div style="font-size:20px;font-weight:700;color:var(--accent)" id="targetWeightVal">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">현재 체중</div><div style="font-size:20px;font-weight:800;" id="curWeightVal">-</div></div>
+        <div><div class="lbl" style="font-size:11px;color:var(--sub)">목표 체중</div><div style="font-size:20px;font-weight:800;color:var(--accent-dark)" id="targetWeightVal">-</div></div>
       </div>
       <div class="progress-wrap"><div class="progress-bar" id="weightProgressBar" style="width:0%"></div></div>
       <div style="font-size:12px;color:var(--sub);margin-top:6px;" id="weightProgressLabel"></div>
@@ -183,9 +199,9 @@
       <input type="number" class="wide" id="targetInput" value="73" step="0.1">
       <label class="field">계단 오르기 목표 층수</label>
       <input type="number" class="wide" id="floorGoalInput" value="60" step="1">
-      <div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5;">
-        키 176cm · 체중 83kg 기준 BMI는 약 <b>26.8 (비만 1단계)</b>입니다.<br>
-        1차 목표는 <b>73kg (BMI 23.6)</b>, 최종 목표는 <b>68kg (BMI 22, 정상 범위)</b>를 추천드려요. 계단은 현재 40층에서 최종 60층을 목표로 잡아뒀어요. 목표는 자유롭게 수정하세요.
+      <div style="font-size:12px;color:var(--sub);margin-top:10px;line-height:1.6;">
+        키 176cm · 체중 83kg 기준 BMI는 약 <b style="color:var(--text)">26.8 (비만 1단계)</b>입니다.<br>
+        1차 목표는 <b style="color:var(--text)">73kg (BMI 23.6)</b>, 최종 목표는 <b style="color:var(--text)">68kg (BMI 22, 정상 범위)</b>를 추천드려요. 계단은 현재 40층에서 최종 60층을 목표로 잡아뒀어요.
       </div>
       <button class="btn" id="saveSettingsBtn" style="margin-top:14px;">저장</button>
     </div>
@@ -207,14 +223,25 @@
 </main>
 
 <div class="tabs">
-  <button class="tab-btn active" data-view="today"><span class="ic">✅</span>오늘</button>
-  <button class="tab-btn" data-view="stats"><span class="ic">📊</span>통계</button>
-  <button class="tab-btn" data-view="settings"><span class="ic">⚙️</span>설정</button>
+  <button class="tab-btn active" data-view="today"><span class="ic" data-icon="home"></span>오늘</button>
+  <button class="tab-btn" data-view="stats"><span class="ic" data-icon="chart"></span>통계</button>
+  <button class="tab-btn" data-view="settings"><span class="ic" data-icon="settings"></span>설정</button>
 </div>
 
 <script>
 (function(){
   "use strict";
+
+  // ---------- 아이콘 ----------
+  var ICONS = {
+    home: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9v-6h6v6h2.5a1 1 0 0 0 1-1v-9"/></svg>',
+    chart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>',
+    settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+  };
+  document.querySelectorAll("[data-icon]").forEach(function(el){
+    el.innerHTML = ICONS[el.dataset.icon] || "";
+  });
 
   // ---------- 데이터 ----------
   // type: "floors" (계단 전용, 층수 입력) / "sets" (세트 수 입력) / "plain" (단순 체크 + 분)
@@ -255,8 +282,30 @@
         {id:"cycle_cooldown", type:"sets", label:"③ 쿨다운", setDef:"1세트 = 3분 (저저항, 천천히)", met:3, defaultSets:1, minPerSet:3, track:true,
           tip:"💡 저항을 낮추고 천천히 페달을 돌리며 심박수를 서서히 내려주세요."}
       ]
+    },
+    outdoor: {
+      name: "아스장 근력 루틴",
+      steps: [
+        {id:"shoulder_roll", type:"sets", label:"① 어깨 돌리기 (워밍업)", setDef:"1세트 = 15회 (양방향)", met:2.5, defaultSets:2, minPerSet:1, track:true,
+          tip:"💡 원형 손잡이를 가볍게 잡고 큰 원을 그리듯 천천히 어깨를 돌려주세요. 반동은 금물!"},
+        {id:"side_wave", type:"sets", label:"② 옆 파도타기 (전신 유산소)", setDef:"1세트 = 30초", met:4.5, defaultSets:3, minPerSet:0.5, track:true,
+          tip:"💡 상체는 고정하고 하체(엉덩이·허리)만 좌우로 튼다는 느낌으로 움직이면 옆구리 라인에 효과적이에요."},
+        {id:"rowing", type:"sets", label:"③ 온몸 노젓기", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 다리로 미는 힘과 팔로 당기는 힘을 함께 써야 전신 자극이 커요. 노를 젓듯 리듬감 있게!"},
+        {id:"chair_press", type:"sets", label:"④ 온몸 팔 밀어 올리기", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 숨을 내쉬며 밀어 올리고, 들이마시며 천천히 제자리로. 어깨보다 가슴·팔로 미는 느낌을 유지하세요."},
+        {id:"waist_twist", type:"sets", label:"⑤ 허리 비틀기", setDef:"1세트 = 20회", met:3, defaultSets:2, minPerSet:1, track:true,
+          tip:"💡 상체를 세게 홱 돌리지 말고, 편안한 회전 범위 안에서 천천히 좌우로 비틀어주세요."},
+        {id:"situp", type:"sets", label:"⑥ 윗몸 일으키기", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 목을 손으로 당기지 말고 복부 힘으로 상체를 들어올리세요. 반동 사용은 금물!"},
+        {id:"leg_extension", type:"sets", label:"⑦ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 등을 등받이에 딱 붙이고, 무릎을 다 편 상태에서 1초 멈췄다가 천천히 내려오면 허벅지 앞쪽에 자극이 잘 들어와요."},
+        {id:"back_stretch", type:"plain", label:"⑧ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
+          tip:"💡 운동 마무리로 천천히 등과 허리를 늘려주며 호흡을 고르세요."}
+      ]
     }
   };
+  var CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧"];
 
   var LS_KEY = "wc_sessions_v2";
   var LS_SETTINGS = "wc_settings_v2";
@@ -310,17 +359,44 @@
   }
   initStepState();
 
-  // ---------- 탭 전환 ----------
+  // ---------- 탭 전환 (클릭 + 스와이프) ----------
+  var VIEW_ORDER = ["today","stats","settings"];
+
+  function switchView(name){
+    var idx = VIEW_ORDER.indexOf(name);
+    if(idx < 0) return;
+    document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.view === name); });
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.toggle("active", v.id === "view-"+name); });
+    document.querySelectorAll("#viewDots span").forEach(function(d, i){ d.classList.toggle("on", i === idx); });
+    if(name === "stats") renderStats();
+    if(name === "settings") renderSettings();
+  }
+
   document.querySelectorAll(".tab-btn").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
-      btn.classList.add("active");
-      document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
-      document.getElementById("view-"+btn.dataset.view).classList.add("active");
-      if(btn.dataset.view === "stats") renderStats();
-      if(btn.dataset.view === "settings") renderSettings();
-    });
+    btn.addEventListener("click", function(){ switchView(btn.dataset.view); });
   });
+
+  (function setupSwipe(){
+    var mainEl = document.getElementById("mainArea");
+    var startX = 0, startY = 0, tracking = false;
+    mainEl.addEventListener("touchstart", function(e){
+      if(e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, {passive:true});
+    mainEl.addEventListener("touchend", function(e){
+      if(!tracking) return;
+      tracking = false;
+      var dx = e.changedTouches[0].clientX - startX;
+      var dy = e.changedTouches[0].clientY - startY;
+      if(Math.abs(dx) < 55 || Math.abs(dy) > 60) return;
+      var activeBtn = document.querySelector(".tab-btn.active");
+      var idx = VIEW_ORDER.indexOf(activeBtn.dataset.view);
+      if(dx < 0 && idx < VIEW_ORDER.length - 1) switchView(VIEW_ORDER[idx+1]);
+      else if(dx > 0 && idx > 0) switchView(VIEW_ORDER[idx-1]);
+    }, {passive:true});
+  })();
 
   document.getElementById("routineSeg").addEventListener("click", function(e){
     var btn = e.target.closest("button[data-routine]");
@@ -349,7 +425,7 @@
         var pct = Math.min(100, Math.round((st.floors / goal) * 100));
         row.innerHTML =
           '<div class="step-top">' +
-            '<div class="check' + (st.floors > 0 ? ' on' : '') + '">✓</div>' +
+            '<div class="check' + (st.floors > 0 ? ' on' : '') + '">' + ICONS.check + '</div>' +
             '<div class="step-body">' +
               '<div class="step-label">' + s.label + '</div>' +
               '<div class="step-sub">오늘 오른 층수를 입력하세요</div>' +
@@ -371,7 +447,7 @@
         var kcal2 = Math.round(kcalFor(s.met, minutes2, state.settings.weight));
         row.innerHTML =
           '<div class="step-top">' +
-            '<div class="check' + (st.sets > 0 ? ' on' : '') + '">✓</div>' +
+            '<div class="check' + (st.sets > 0 ? ' on' : '') + '">' + ICONS.check + '</div>' +
             '<div class="step-body">' +
               '<div class="step-label">' + s.label + '</div>' +
               '<div class="step-sub">' + s.setDef + '</div>' +
@@ -392,7 +468,7 @@
         var kcal3 = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
         row.innerHTML =
           '<div class="step-top">' +
-            '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">✓</div>' +
+            '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">' + ICONS.check + '</div>' +
             '<div class="step-body">' +
               '<div class="step-label">' + s.label + '</div>' +
               (s.track ?
@@ -637,7 +713,6 @@
       histCard.innerHTML = '<div class="empty">아직 기록이 없어요. 오늘 운동을 체크하고 저장해보세요!</div>';
     } else {
       histCard.innerHTML = "";
-      var CIRCLED = ["①","②","③","④","⑤","⑥"];
       sessions.slice().reverse().slice(0,30).forEach(function(s){
         var row = document.createElement("div");
         row.className = "hist-item";
@@ -655,7 +730,7 @@
         }).join("");
         row.innerHTML =
           '<div class="hist-top">' +
-            '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;">' + s.routineName + (s.floors ? ' · 계단 ' + s.floors + '층' : '') + '</span></div>' +
+            '<div class="l">' + s.date + '<br><span style="color:var(--sub);font-size:11px;font-weight:400;">' + s.routineName + (s.floors ? ' · 계단 ' + s.floors + '층' : '') + '</span></div>' +
             '<div class="r"><span class="k">' + s.kcal + ' kcal</span><br><span class="m">' + s.min + '분</span></div>' +
           '</div>' +
           '<div class="hist-bottom">' +
@@ -715,7 +790,7 @@
     var el = document.getElementById("weightLogList");
     if(list.length === 0){ el.innerHTML = '<div class="empty" style="padding:10px 0;">체중 기록이 없어요.</div>'; return; }
     el.innerHTML = list.map(function(w){
-      return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);"><span>' + w.date + '</span><span>' + w.weight + ' kg</span></div>';
+      return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);"><span>' + w.date + '</span><span style="font-weight:600;">' + w.weight + ' kg</span></div>';
     }).join("");
   }
 
