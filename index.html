@@ -497,8 +497,18 @@
   }
   function saveSettings(){ localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings)); }
 
+  function genId(){ return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,9); }
   function loadSessions(){
-    try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; }
+    var list;
+    try{ list = JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ list = []; }
+    // 기존에 저장된 기록 중 고유 id가 없는 항목(같은 날짜 = 같은 ts를 공유하던 구버전 데이터)에
+    // id를 부여해서, 같은 날 여러 번 저장한 기록을 각각 따로 삭제할 수 있게 해준다.
+    var dirty = false;
+    list.forEach(function(s){
+      if(!s.id){ s.id = genId(); dirty = true; }
+    });
+    if(dirty) saveSessions(list);
+    return list;
   }
   function saveSessions(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
 
@@ -812,6 +822,7 @@
     var sessionDate = state.selectedDate || todayStr();
     var sessionTs = new Date(sessionDate + "T12:00:00").getTime();
     sessions.push({
+      id: genId(),
       date: sessionDate,
       ts: sessionTs,
       routine: state.routine,
@@ -1078,15 +1089,16 @@
           '</div>' +
           '<div class="hist-bottom">' +
             '<div class="hist-badges">' + badges + '</div>' +
-            '<button class="del" data-ts="' + s.ts + '">삭제</button>' +
+            '<button class="del" data-id="' + s.id + '">삭제</button>' +
           '</div>';
         histCard.appendChild(row);
       });
       histCard.querySelectorAll(".del").forEach(function(btn){
         btn.addEventListener("click", function(){
-          var ts = parseFloat(btn.dataset.ts);
-          var list = loadSessions().filter(function(s){ return s.ts !== ts; });
+          var id = btn.dataset.id;
+          var list = loadSessions().filter(function(s){ return s.id !== id; });
           saveSessions(list);
+          toast("기록을 삭제했어요.", "ok");
           renderStats();
         });
       });
