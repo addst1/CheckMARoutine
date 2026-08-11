@@ -212,6 +212,15 @@
       <div style="font-size:11px;color:var(--sub);margin-top:6px;" id="periodGoalLabel"></div>
     </div>
 
+    <h2>추천 주간 루틴 스케줄</h2>
+    <div class="card" style="font-size:12px;color:var(--sub);line-height:1.8;">
+      <div style="margin-bottom:6px;">🎯 체지방 감량기엔 근육을 지키는 게 핵심이라, 저항 운동은 주 3~4회, 회복일은 사이클 위주로 짜는 걸 추천해요.</div>
+      <div><b style="color:var(--text)">월</b> 기본 64빌딩 · <b style="color:var(--text)">화</b> 자전거 회복 · <b style="color:var(--text)">수</b> 아스장 근력 · <b style="color:var(--text)">목</b> 철봉 행&amp;턱걸이 · <b style="color:var(--text)">금</b> 멀티 튜빙밴드 · <b style="color:var(--text)">토</b> 자전거 회복 또는 휴식 · <b style="color:var(--text)">일</b> 완전 휴식</div>
+      <div style="margin-top:8px;">💪 모든 근력 루틴에 밀기(밴드 프레스류)와 당기기(로우·행)가 함께 들어있게 조정했으니, 순서대로 돌리기만 해도 밀기:당기기 균형이 맞아요.</div>
+      <div style="margin-top:8px;">🦵 하체는 레그 익스텐션·밴드 스쿼트 프레스 세트를 늘려뒀어요. 대사량 유지에 하체 근육이 큰 역할을 하니 빼먹지 마세요.</div>
+      <div style="margin-top:8px;">📅 출장 등으로 일정이 바뀌면 순서만 밀려도 괜찮아요 — 한 주에 저항 루틴 3~4번, 완전 휴식 1일만 지키면 돼요.</div>
+    </div>
+
     <div class="stat-grid">
       <div class="stat-box"><div class="v" id="streakVal">0일</div><div class="l">🔥 연속 운동</div></div>
       <div class="stat-box"><div class="v" id="monthKcal">0</div><div class="l">이번 달 총 kcal</div></div>
@@ -394,7 +403,9 @@
           tip:"💡 앞으로 내딛는 대신 한 발을 뒤로 빼며 앉으세요. 무릎이 발끝을 덜 넘어가서 무릎 부담이 훨씬 적어요. 상체는 곧게, 시선은 정면!"},
         {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true,
           tip:"💡 당길 때 어깨를 으쓱하지 말고 견갑골을 모으는 느낌으로! 반동 없이 천천히가 등 자극에 더 효과적이에요."},
-        {id:"finish_stairs", type:"plain", label:"④ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true,
+        {id:"band_chest_press_home", type:"sets", label:"④ 밴드 체스트 프레스 (문에 고정)", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 인클라인 로우로 당긴 만큼 미는 근육도 채워야 어깨 밸런스가 맞아요. 문틈에 밴드를 걸고 가슴 높이에서 앞으로 밀어내세요."},
+        {id:"finish_stairs", type:"plain", label:"⑤ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true,
           tip:"💡 마무리 계단은 천천히 걷듯이 올라가도 충분해요. 샤워 전 스트레칭 1~2분 추가하면 회복에 좋아요."}
       ]
     },
@@ -407,7 +418,9 @@
           tip:"💡 한 발을 뒤로 빼며 앉는 방식이라 무릎 부담이 적어요. 복도가 좁으면 제자리에서 좌우 번갈아 해도 효과는 비슷해요."},
         {id:"back_row", type:"sets", label:"③ 랫풀다운 / 원암 덤벨 로우", setDef:"1세트 = 15개", met:5, defaultSets:3, minPerSet:2, track:true,
           tip:"💡 무게보다 자세가 우선! 반동 없이 천천히 당기고 내리세요."},
-        {id:"shower", type:"plain", label:"④ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false,
+        {id:"band_chest_press_travel", type:"sets", label:"④ 밴드 체스트 프레스", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 캐리어에 밴드 하나만 챙기면 호텔에서도 미는 운동을 채울 수 있어요. 문에 걸고 가슴 높이에서 밀어내세요."},
+        {id:"shower", type:"plain", label:"⑤ 방으로 복귀 후 샤워 마무리", met:1, min:3, track:false,
           tip:"💡 운동 중 흘린 땀만큼 물 한 컵 챙겨 마시는 것 잊지 마세요."}
       ]
     },
@@ -439,8 +452,8 @@
           tip:"💡 상체를 세게 홱 돌리지 말고, 편안한 회전 범위 안에서 천천히 좌우로 비틀어주세요."},
         {id:"situp", type:"sets", label:"⑦ 윗몸 일으키기", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 목을 손으로 당기지 말고 복부 힘으로 상체를 들어올리세요. 반동 사용은 금물!"},
-        {id:"leg_extension", type:"sets", label:"⑧ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
-          tip:"💡 등을 등받이에 딱 붙이고, 무릎을 다 편 상태에서 1초 멈췄다가 천천히 내려오면 허벅지 앞쪽에 자극이 잘 들어와요."},
+        {id:"leg_extension", type:"sets", label:"⑧ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:4, minPerSet:1.5, track:true,
+          tip:"💡 등을 등받이에 딱 붙이고, 무릎을 다 편 상태에서 1~2초 멈췄다가 천천히 내려오면 허벅지 앞쪽에 자극이 잘 들어와요. 감량기엔 하체 근육량 유지가 중요해서 세트를 늘렸어요."},
         {id:"back_stretch", type:"plain", label:"⑨ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
           tip:"💡 운동 마무리로 천천히 등과 허리를 늘려주며 호흡을 고르세요."}
       ]
@@ -454,15 +467,17 @@
           tip:"💡 어깨뼈를 아래로 끌어내리듯 견갑골을 살짝 조여주세요. 턱걸이 첫 동작(스캐퓰러 풀업)과 같은 자세예요."},
         {id:"pullup", type:"sets", label:"③ 턱걸이 (최종 목표)", setDef:"1세트 = 최대 반복 횟수", met:8, defaultSets:1, minPerSet:1, track:true,
           tip:"💡 아직 어렵다면 체크를 해제하거나 0회로 두셔도 괜찮아요! 데드행·액티브행이 편해지면 밴드 어시스트나 점프 후 천천히 내려오는 네거티브 턱걸이부터 시도해보세요."},
-        {id:"pullbar_stretch", type:"plain", label:"④ 마무리 스트레칭 (전완·어깨)", met:2, min:2, track:true,
+        {id:"band_ohp_pullbar", type:"sets", label:"④ 밴드 오버헤드 프레스", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+          tip:"💡 철봉에서 당김 위주로 운동했으니, 밴드를 밟고 머리 위로 밀어 올리며 어깨 앞쪽·삼두도 채워주세요. 당김:밀기 밸런스를 맞추는 핵심 스텝이에요."},
+        {id:"pullbar_stretch", type:"plain", label:"⑤ 마무리 스트레칭 (전완·어깨)", met:2, min:2, track:true,
           tip:"💡 손목을 반대손으로 살짝 당겨 전완을 풀어주고, 어깨도 크게 돌려 마무리하세요."}
       ]
     },
     tubing: {
       name: "멀티 튜빙밴드 루틴",
       steps: [
-        {id:"band_squat_press", type:"sets", label:"① 밴드 스쿼트 오버헤드 프레스", setDef:"1세트 = 12회", met:5, defaultSets:3, minPerSet:1.5, track:true,
-          tip:"💡 밴드 중앙을 양발로 밟고 스쿼트 자세에서 일어나며 손잡이를 머리 위로 밀어 올리세요. 하체+어깨 동시 자극!"},
+        {id:"band_squat_press", type:"sets", label:"① 밴드 스쿼트 오버헤드 프레스", setDef:"1세트 = 12회", met:5, defaultSets:4, minPerSet:1.5, track:true,
+          tip:"💡 밴드 중앙을 양발로 밟고 스쿼트 자세에서 일어나며 손잡이를 머리 위로 밀어 올리세요. 하체+어깨 동시 자극! 밴드를 짧게 잡을수록 저항이 세지니, 익숙해지면 손 위치를 좁혀 강도를 올려보세요."},
         {id:"band_row", type:"sets", label:"② 밴드 로우 (문 고정)", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 밴드를 문 고정 걸이(도어앵커)로 가슴 높이에 걸고, 바를 배꼽 쪽으로 당기며 견갑골을 모으세요."},
         {id:"band_chest_press", type:"sets", label:"③ 밴드 체스트 프레스", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
