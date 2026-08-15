@@ -81,6 +81,16 @@
   .step-label{font-size:14px;line-height:1.4;font-weight:600;}
   .step-sub{font-size:11.5px;color:var(--sub);margin-top:2px;}
   .step-tip{font-size:11.5px;color:var(--accent-dark);margin-top:8px;line-height:1.5;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 var(--rs) var(--rs) 0;padding:8px 10px;}
+  .step-remove{flex:0 0 auto;width:26px;height:26px;border:none;border-radius:50%;background:var(--card2);color:var(--sub);display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step-remove:hover{background:var(--danger-soft);color:var(--danger);}
+  .custom-section-label{font-size:12.5px;font-weight:700;color:var(--text);margin:2px 0 8px;}
+  .custom-group-label{font-size:11px;font-weight:700;color:var(--sub);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.3px;}
+  .custom-add-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .custom-add-btn{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;min-height:44px;padding:10px;border-radius:12px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-size:12px;font-weight:500;text-align:left;line-height:1.3;}
+  .custom-add-btn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark);}
+  .custom-add-btn .plus{width:16px;height:16px;flex:0 0 16px;font-size:15px;font-weight:800;color:var(--accent);display:flex;align-items:center;justify-content:center;}
+  .custom-add-btn.selected{border-color:var(--accent);background:var(--accent);color:#fff;}
+  .custom-add-btn.selected .plus{color:#fff;}
   .step-meta{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap;}
   .step-meta input[type=number]{width:56px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 6px;font-size:13px;text-align:center;}
   .step-meta span{font-size:12px;color:var(--sub);}
@@ -162,21 +172,23 @@
 <main id="mainArea">
   <!-- 오늘 뷰 -->
   <div class="view active" id="view-today">
-    <div class="seg-grid" id="routineSeg">
-      <button data-routine="basic" class="active"><span data-icon="stairs"></span> 기본</button>
-      <button data-routine="travel"><span data-icon="travel"></span> 출장</button>
-      <button data-routine="cycle"><span data-icon="cycle"></span> 자전거</button>
-      <button data-routine="outdoor"><span data-icon="outdoor"></span> 아스장</button>
-      <button data-routine="pullbar"><span data-icon="pullbar"></span> 철봉</button>
-      <button data-routine="tubing"><span data-icon="tubing"></span> 밴드</button>
-    </div>
-
     <div class="date-row">
       <span class="date-row-label">기록 날짜</span>
       <input type="date" id="logDateInput" class="date-input">
       <button class="btn secondary date-today-btn" id="setTodayBtn">오늘로</button>
     </div>
 
+    <div class="seg-grid" id="routineSeg">
+      <button data-routine="custom" class="active"><span data-icon="custom"></span> 직접선택</button>
+      <button data-routine="travel"><span data-icon="travel"></span> 출장</button>
+    </div>
+
+    <div id="customAddSection" style="display:none;">
+      <h2>종목 추가</h2>
+      <div class="card" id="customAddCard"></div>
+    </div>
+
+    <h2>오늘 목표</h2>
     <div class="summary">
       <div>
         <div class="lbl">예상 소모 칼로리</div>
@@ -187,12 +199,12 @@
         <div class="big" id="todayProgress" style="font-size:20px">0/4</div>
       </div>
     </div>
-
     <div class="goal-bar-wrap">
-      <div class="goal-bar-label"><span>오늘 목표</span><span id="dailyGoalText">0 / 0 kcal</span></div>
+      <div class="goal-bar-label"><span>일일 목표 대비</span><span id="dailyGoalText">0 / 0 kcal</span></div>
       <div class="progress-wrap"><div class="progress-bar" id="dailyGoalBar" style="width:0%"></div></div>
     </div>
 
+    <h2>오늘 구성</h2>
     <div class="card" id="stepsCard"></div>
 
     <button class="btn" id="saveBtn">이 날짜로 저장</button>
@@ -247,6 +259,11 @@
       <div class="progress-wrap"><div class="progress-bar" id="weightProgressBar" style="width:0%"></div></div>
       <div style="font-size:12px;color:var(--sub);margin-top:6px;" id="weightProgressLabel"></div>
       <div style="font-size:12px;margin-top:10px;">현재 BMI <b id="curBmi">-</b><span class="badge" id="bmiBadge"></span></div>
+    </div>
+
+    <h2>체중 변화 추이</h2>
+    <div class="card">
+      <div id="weightChartWrap"></div>
     </div>
 
     <h2>감량 시 주의사항</h2>
@@ -341,7 +358,9 @@
     cycle: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.2"/><circle cx="18.5" cy="17.5" r="3.2"/><path d="M5.5 17.5 10 9h5l3.5 8.5M10 9 8 6h-2M10 9l3 5.5h5.5"/></svg>',
     outdoor: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6M20 9v6"/><path d="M2 12h2M20 12h2"/><path d="M7 7v10M17 7v10"/><path d="M7 12h10"/></svg>',
     pullbar: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M6 6v3.5a2 2 0 0 0 2 2h1M18 6v3.5a2 2 0 0 1-2 2h-1"/><path d="M9 11.5v7M15 11.5v7"/></svg>',
-    tubing: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-4 4-4 5.5-2s2 6 4.5 4 2-6 4.5-6 3 2 4.5 4"/></svg>'
+    tubing: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-4 4-4 5.5-2s2 6 4.5 4 2-6 4.5-6 3 2 4.5 4"/></svg>',
+    custom: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L18 7"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>',
+    x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
   };
   function renderIcons(){
     document.querySelectorAll("[data-icon]").forEach(function(el){
@@ -399,13 +418,13 @@
       steps: [
         {id:"stairs", type:"floors", label:"① 아파트 계단 오르기", met:8, minPerFloor:0.2, defaultFloors:40, track:true,
           tip:"💡 발 전체로 딛고 무릎이 발끝을 넘지 않게 오르면 무릎 부담이 줄어요. 난간은 가볍게만 잡고 리듬있게!"},
-        {id:"lunge_lap", type:"sets", label:"② 리버스 런지 워킹 (단지 이동)", setDef:"1세트 = 20걸음 (좌우 번갈아 뒤로)", met:4.5, defaultSets:1, minPerSet:2, track:true,
+        {id:"lunge_lap", type:"sets", label:"② 리버스 런지 워킹 (단지 이동)", shortLabel:"리버스 런지 워킹", setDef:"1세트 = 20걸음 (좌우 번갈아 뒤로)", met:4.5, defaultSets:1, minPerSet:2, track:true,
           tip:"💡 앞으로 내딛는 대신 한 발을 뒤로 빼며 앉으세요. 무릎이 발끝을 덜 넘어가서 무릎 부담이 훨씬 적어요. 상체는 곧게, 시선은 정면!"},
         {id:"incline_row", type:"sets", label:"③ 철봉 인클라인 로우", setDef:"1세트 = 15회 (세트간 1분 휴식)", met:5, defaultSets:3, minPerSet:2, track:true,
           tip:"💡 당길 때 어깨를 으쓱하지 말고 견갑골을 모으는 느낌으로! 반동 없이 천천히가 등 자극에 더 효과적이에요."},
-        {id:"band_chest_press_home", type:"sets", label:"④ 밴드 체스트 프레스 (문에 고정)", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
+        {id:"band_chest_press_home", type:"sets", label:"④ 밴드 체스트 프레스 (문에 고정)", shortLabel:"밴드 체스트 프레스", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 인클라인 로우로 당긴 만큼 미는 근육도 채워야 어깨 밸런스가 맞아요. 문틈에 밴드를 걸고 가슴 높이에서 앞으로 밀어내세요."},
-        {id:"finish_stairs", type:"plain", label:"⑤ 집으로 걸어와 4층 계단 오르기 + 샤워", met:8, min:2, track:true,
+        {id:"finish_stairs", type:"plain", label:"⑤ 집으로 걸어와 4층 계단 오르기 + 샤워", shortLabel:"마무리 계단+샤워", met:8, min:2, track:true,
           tip:"💡 마무리 계단은 천천히 걷듯이 올라가도 충분해요. 샤워 전 스트레칭 1~2분 추가하면 회복에 좋아요."}
       ]
     },
@@ -438,9 +457,9 @@
     outdoor: {
       name: "아스장 근력 루틴",
       steps: [
-        {id:"shoulder_roll", type:"sets", label:"① 어깨 돌리기 (워밍업)", setDef:"1세트 = 15회 (양방향)", met:2.5, defaultSets:2, minPerSet:1, track:true,
+        {id:"shoulder_roll", type:"sets", label:"① 어깨 돌리기 (워밍업)", shortLabel:"어깨 돌리기", setDef:"1세트 = 15회 (양방향)", met:2.5, defaultSets:2, minPerSet:1, track:true,
           tip:"💡 원형 손잡이를 가볍게 잡고 큰 원을 그리듯 천천히 어깨를 돌려주세요. 반동은 금물!"},
-        {id:"side_wave", type:"sets", label:"② 옆 파도타기 (전신 유산소)", setDef:"1세트 = 30초", met:4.5, defaultSets:3, minPerSet:0.5, track:true,
+        {id:"side_wave", type:"sets", label:"② 옆 파도타기 (전신 유산소)", shortLabel:"옆 파도타기", setDef:"1세트 = 30초", met:4.5, defaultSets:3, minPerSet:0.5, track:true,
           tip:"💡 상체는 고정하고 하체(엉덩이·허리)만 좌우로 튼다는 느낌으로 움직이면 옆구리 라인에 효과적이에요."},
         {id:"rowing", type:"sets", label:"③ 온몸 노젓기", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 다리로 미는 힘과 팔로 당기는 힘을 함께 써야 전신 자극이 커요. 노를 젓듯 리듬감 있게!"},
@@ -454,37 +473,37 @@
           tip:"💡 목을 손으로 당기지 말고 복부 힘으로 상체를 들어올리세요. 반동 사용은 금물!"},
         {id:"leg_extension", type:"sets", label:"⑧ 앉아 무릎 펴기", setDef:"1세트 = 15회", met:3.5, defaultSets:4, minPerSet:1.5, track:true,
           tip:"💡 등을 등받이에 딱 붙이고, 무릎을 다 편 상태에서 1~2초 멈췄다가 천천히 내려오면 허벅지 앞쪽에 자극이 잘 들어와요. 감량기엔 하체 근육량 유지가 중요해서 세트를 늘렸어요."},
-        {id:"back_stretch", type:"plain", label:"⑨ 등·허리 근육 풀기 (마무리)", met:2, min:3, track:true,
+        {id:"back_stretch", type:"plain", label:"⑨ 등·허리 근육 풀기 (마무리)", shortLabel:"등·허리 풀기", met:2, min:3, track:true,
           tip:"💡 운동 마무리로 천천히 등과 허리를 늘려주며 호흡을 고르세요."}
       ]
     },
     pullbar: {
       name: "철봉 행 & 턱걸이",
       steps: [
-        {id:"dead_hang", type:"sets", label:"① 데드행 (Dead Hang)", setDef:"1세트 = 20~30초 매달리기", met:3, defaultSets:3, minPerSet:0.5, track:true,
+        {id:"dead_hang", type:"sets", label:"① 데드행 (Dead Hang)", shortLabel:"데드행", setDef:"1세트 = 20~30초 매달리기", met:3, defaultSets:3, minPerSet:0.5, track:true,
           tip:"💡 어깨가 귀에 닿지 않게 힘을 빼고 팔만으로 축 매달리세요. 그립·전완 근지구력을 키우는 기본기예요."},
-        {id:"active_hang", type:"sets", label:"② 액티브행 (Active Hang)", setDef:"1세트 = 15~20초 매달리기", met:3.5, defaultSets:3, minPerSet:0.33, track:true,
+        {id:"active_hang", type:"sets", label:"② 액티브행 (Active Hang)", shortLabel:"액티브행", setDef:"1세트 = 15~20초 매달리기", met:3.5, defaultSets:3, minPerSet:0.33, track:true,
           tip:"💡 어깨뼈를 아래로 끌어내리듯 견갑골을 살짝 조여주세요. 턱걸이 첫 동작(스캐퓰러 풀업)과 같은 자세예요."},
-        {id:"pullup", type:"sets", label:"③ 턱걸이 (최종 목표)", setDef:"1세트 = 최대 반복 횟수", met:8, defaultSets:1, minPerSet:1, track:true,
+        {id:"pullup", type:"sets", label:"③ 턱걸이 (최종 목표)", shortLabel:"턱걸이", setDef:"1세트 = 최대 반복 횟수", met:8, defaultSets:1, minPerSet:1, track:true,
           tip:"💡 아직 어렵다면 체크를 해제하거나 0회로 두셔도 괜찮아요! 데드행·액티브행이 편해지면 밴드 어시스트나 점프 후 천천히 내려오는 네거티브 턱걸이부터 시도해보세요."},
         {id:"band_ohp_pullbar", type:"sets", label:"④ 밴드 오버헤드 프레스", setDef:"1세트 = 12회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 철봉에서 당김 위주로 운동했으니, 밴드를 밟고 머리 위로 밀어 올리며 어깨 앞쪽·삼두도 채워주세요. 당김:밀기 밸런스를 맞추는 핵심 스텝이에요."},
-        {id:"pullbar_stretch", type:"plain", label:"⑤ 마무리 스트레칭 (전완·어깨)", met:2, min:2, track:true,
+        {id:"pullbar_stretch", type:"plain", label:"⑤ 마무리 스트레칭 (전완·어깨)", shortLabel:"마무리 스트레칭", met:2, min:2, track:true,
           tip:"💡 손목을 반대손으로 살짝 당겨 전완을 풀어주고, 어깨도 크게 돌려 마무리하세요."}
       ]
     },
     tubing: {
       name: "멀티 튜빙밴드 루틴",
       steps: [
-        {id:"band_squat_press", type:"sets", label:"① 밴드 스쿼트 오버헤드 프레스", setDef:"1세트 = 12회", met:5, defaultSets:4, minPerSet:1.5, track:true,
+        {id:"band_squat_press", type:"sets", label:"① 밴드 스쿼트 오버헤드 프레스", shortLabel:"밴드 스쿼트 프레스", setDef:"1세트 = 12회", met:5, defaultSets:4, minPerSet:1.5, track:true,
           tip:"💡 밴드 중앙을 양발로 밟고 스쿼트 자세에서 일어나며 손잡이를 머리 위로 밀어 올리세요. 하체+어깨 동시 자극! 밴드를 짧게 잡을수록 저항이 세지니, 익숙해지면 손 위치를 좁혀 강도를 올려보세요."},
-        {id:"band_row", type:"sets", label:"② 밴드 로우 (문 고정)", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
+        {id:"band_row", type:"sets", label:"② 밴드 로우 (문 고정)", shortLabel:"밴드 로우", setDef:"1세트 = 15회", met:4.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 밴드를 문 고정 걸이(도어앵커)로 가슴 높이에 걸고, 바를 배꼽 쪽으로 당기며 견갑골을 모으세요."},
         {id:"band_chest_press", type:"sets", label:"③ 밴드 체스트 프레스", setDef:"1세트 = 12회", met:4, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 밴드를 등 뒤(어깨 높이)로 고정하고 앞으로 밀어내세요. 팔꿈치를 다 펴지 말고 살짝 남겨 관절 부담을 줄이세요."},
         {id:"band_bicep_curl", type:"sets", label:"④ 밴드 바이셉 컬", setDef:"1세트 = 15회", met:3.5, defaultSets:3, minPerSet:1.5, track:true,
           tip:"💡 양발로 밴드를 밟고 팔꿈치를 고정한 채 손잡이만 들어올리세요. 반동 없이 천천히!"},
-        {id:"band_woodchop", type:"sets", label:"⑤ 밴드 우드찹 (코어)", setDef:"1세트 = 12회 (양쪽 번갈아)", met:4, defaultSets:2, minPerSet:1.5, track:true,
+        {id:"band_woodchop", type:"sets", label:"⑤ 밴드 우드찹 (코어)", shortLabel:"밴드 우드찹", setDef:"1세트 = 12회 (양쪽 번갈아)", met:4, defaultSets:2, minPerSet:1.5, track:true,
           tip:"💡 밴드를 높은 곳에 고정하고 대각선 아래로 크게 당겨 내리세요. 허리보다 몸통 회전으로 움직이면 옆구리에 잘 들어와요."},
         {id:"band_stretch", type:"plain", label:"⑥ 마무리 스트레칭", met:2, min:3, track:true,
           tip:"💡 사용 전 밴드에 갈라짐·손상이 없는지 확인하고, 고정 지점이 튼튼한지 항상 체크한 후 시작하세요."}
@@ -493,15 +512,60 @@
   };
   var CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];
 
+  // ---------- 직접선택(짜집기) 모드용 종목 풀 (출장 제외) ----------
+  var CUSTOM_SOURCE_KEYS = ["basic","cycle","outdoor","pullbar","tubing"];
+  var CUSTOM_SOURCE_LABELS = {basic:"기본", cycle:"자전거", outdoor:"아스장", pullbar:"철봉", tubing:"밴드"};
+  var ALL_STEPS_POOL = [];
+  CUSTOM_SOURCE_KEYS.forEach(function(key){
+    ROUTINES[key].steps.forEach(function(s){
+      var clone = {};
+      for(var k in s){ clone[k] = s[k]; }
+      clone._src = key;
+      ALL_STEPS_POOL.push(clone);
+    });
+  });
+
   var LS_KEY = "wc_sessions_v2";
   var LS_SETTINGS = "wc_settings_v2";
   var LS_WEIGHTLOG = "wc_weightlog_v1";
+  var LS_CUSTOM = "wc_custom_pick_v1";
+
+  function loadCustomPick(){
+    try{ return JSON.parse(localStorage.getItem(LS_CUSTOM)) || []; }catch(e){ return []; }
+  }
+  function saveCustomPick(){ localStorage.setItem(LS_CUSTOM, JSON.stringify(state.customStepIds)); }
 
   var state = {
-    routine: "basic",
+    routine: "custom",
     stepState: {},
     settings: loadSettings(),
+    customStepIds: loadCustomPick(),
   };
+
+  function getCustomSteps(){
+    return state.customStepIds
+      .map(function(id){ return ALL_STEPS_POOL.find(function(p){ return p.id === id; }); })
+      .filter(Boolean);
+  }
+  function getActiveSteps(){
+    return state.routine === "custom" ? getCustomSteps() : ROUTINES[state.routine].steps;
+  }
+  // 직접선택 모드에서 종목을 추가/제거할 때, 이미 입력 중인 다른 종목의 값은 건드리지 않고
+  // 새로 추가된 종목만 기본값으로 초기화한다.
+  function syncCustomStepState(){
+    var activeIds = state.customStepIds;
+    Object.keys(state.stepState).forEach(function(id){
+      if(activeIds.indexOf(id) === -1) delete state.stepState[id];
+    });
+    activeIds.forEach(function(id){
+      if(state.stepState[id]) return;
+      var s = ALL_STEPS_POOL.find(function(p){ return p.id === id; });
+      if(!s) return;
+      if(s.type === "floors") state.stepState[id] = {floors: s.defaultFloors};
+      else if(s.type === "sets") state.stepState[id] = {sets: s.defaultSets, minPerSet: s.minPerSet};
+      else state.stepState[id] = {checked:true, min:s.min};
+    });
+  }
 
   function loadSettings(){
     try{
@@ -543,7 +607,7 @@
 
   function initStepState(){
     state.stepState = {};
-    ROUTINES[state.routine].steps.forEach(function(s){
+    getActiveSteps().forEach(function(s){
       if(s.type === "floors"){
         state.stepState[s.id] = {floors: s.defaultFloors};
       } else if(s.type === "sets"){
@@ -618,79 +682,71 @@
   });
 
   // ---------- 오늘 뷰 렌더 ----------
-  function renderSteps(){
-    var card = document.getElementById("stepsCard");
-    card.innerHTML = "";
-    var steps = ROUTINES[state.routine].steps;
-    steps.forEach(function(s){
-      var st = state.stepState[s.id];
-      var row = document.createElement("div");
-      row.className = "step";
-
-      if(s.type === "floors"){
-        var minutes = st.floors * s.minPerFloor;
-        var kcal = Math.round(kcalFor(s.met, minutes, state.settings.weight));
-        var goal = state.settings.floorGoal || 60;
-        var pct = Math.min(100, Math.round((st.floors / goal) * 100));
-        row.innerHTML =
-          '<div class="step-top">' +
-            '<div class="check' + (st.floors > 0 ? ' on' : '') + '" data-floorcheck="' + s.id + '">' + ICONS.check + '</div>' +
-            '<div class="step-body">' +
-              '<div class="step-label">' + s.label + '</div>' +
-              '<div class="step-sub">오늘 오른 층수를 입력하세요</div>' +
-              '<div class="step-meta">' +
-                '<div class="stepper">' +
-                  '<button class="stepbtn" data-floordec="' + s.id + '">−</button>' +
-                  '<span class="stepval">' + st.floors + '층</span>' +
-                  '<button class="stepbtn" data-floorinc="' + s.id + '">+</button>' +
-                '</div>' +
-                '<span class="kcal-pill">' + kcal + ' kcal · 약 ' + Math.round(minutes) + '분</span>' +
+  // 종목 하나의 내부 HTML(.step-top 안쪽)을 만든다. floors/sets/plain 세 타입 공통 사용.
+  // removable이 true면 직접선택 모드에서 "오늘 목록에서 빼기" 버튼이 함께 붙는다.
+  function buildStepHTML(s, st, removable){
+    var removeHtml = removable ? '<button class="step-remove" data-remove-custom="' + s.id + '" title="오늘 목록에서 빼기">' + ICONS.x + '</button>' : '';
+    if(s.type === "floors"){
+      var minutes = st.floors * s.minPerFloor;
+      var kcal = Math.round(kcalFor(s.met, minutes, state.settings.weight));
+      var goal = state.settings.floorGoal || 60;
+      var pct = Math.min(100, Math.round((st.floors / goal) * 100));
+      return '<div class="step-top">' +
+          '<div class="check' + (st.floors > 0 ? ' on' : '') + '" data-floorcheck="' + s.id + '">' + ICONS.check + '</div>' +
+          '<div class="step-body">' +
+            '<div class="step-label">' + s.label + '</div>' +
+            '<div class="step-sub">오늘 오른 층수를 입력하세요</div>' +
+            '<div class="step-meta">' +
+              '<div class="stepper">' +
+                '<button class="stepbtn" data-floordec="' + s.id + '">−</button>' +
+                '<span class="stepval">' + st.floors + '층</span>' +
+                '<button class="stepbtn" data-floorinc="' + s.id + '">+</button>' +
               '</div>' +
-              '<div class="floor-progress"><div class="floor-progress-bar" style="width:' + pct + '%"></div></div>' +
-              '<div class="floor-goal-label">목표 ' + goal + '층 중 ' + st.floors + '층 (' + pct + '%)</div>' +
-              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+              '<span class="kcal-pill">' + kcal + ' kcal · 약 ' + Math.round(minutes) + '분</span>' +
             '</div>' +
-          '</div>';
-      } else if(s.type === "sets"){
-        var minutes2 = st.sets * st.minPerSet;
-        var kcal2 = Math.round(kcalFor(s.met, minutes2, state.settings.weight));
-        row.innerHTML =
-          '<div class="step-top">' +
-            '<div class="check' + (st.sets > 0 ? ' on' : '') + '" data-setcheck="' + s.id + '">' + ICONS.check + '</div>' +
-            '<div class="step-body">' +
-              '<div class="step-label">' + s.label + '</div>' +
-              '<div class="step-sub">' + s.setDef + '</div>' +
-              '<div class="step-meta">' +
-                '<div class="stepper">' +
-                  '<button class="stepbtn" data-setdec="' + s.id + '">−</button>' +
-                  '<span class="stepval">' + st.sets + '세트</span>' +
-                  '<button class="stepbtn" data-setinc="' + s.id + '">+</button>' +
-                '</div>' +
-                '<input type="number" min="0.5" step="0.5" data-minset="' + s.id + '" value="' + st.minPerSet + '">' +
-                '<span>분/세트</span>' +
-                '<span class="kcal-pill">' + kcal2 + ' kcal</span>' +
+            '<div class="floor-progress"><div class="floor-progress-bar" style="width:' + pct + '%"></div></div>' +
+            '<div class="floor-goal-label">목표 ' + goal + '층 중 ' + st.floors + '층 (' + pct + '%)</div>' +
+            (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+          '</div>' + removeHtml +
+        '</div>';
+    } else if(s.type === "sets"){
+      var minutes2 = st.sets * st.minPerSet;
+      var kcal2 = Math.round(kcalFor(s.met, minutes2, state.settings.weight));
+      return '<div class="step-top">' +
+          '<div class="check' + (st.sets > 0 ? ' on' : '') + '" data-setcheck="' + s.id + '">' + ICONS.check + '</div>' +
+          '<div class="step-body">' +
+            '<div class="step-label">' + s.label + '</div>' +
+            '<div class="step-sub">' + s.setDef + '</div>' +
+            '<div class="step-meta">' +
+              '<div class="stepper">' +
+                '<button class="stepbtn" data-setdec="' + s.id + '">−</button>' +
+                '<span class="stepval">' + st.sets + '세트</span>' +
+                '<button class="stepbtn" data-setinc="' + s.id + '">+</button>' +
               '</div>' +
-              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+              '<input type="number" min="0.5" step="0.5" data-minset="' + s.id + '" value="' + st.minPerSet + '">' +
+              '<span>분/세트</span>' +
+              '<span class="kcal-pill">' + kcal2 + ' kcal</span>' +
             '</div>' +
-          '</div>';
-      } else {
-        var kcal3 = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
-        row.innerHTML =
-          '<div class="step-top">' +
-            '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">' + ICONS.check + '</div>' +
-            '<div class="step-body">' +
-              '<div class="step-label">' + s.label + '</div>' +
-              (s.track ?
-                '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal3 + ' kcal</span></div>'
-                : '<div class="step-meta"><span>운동 아님</span></div>') +
-              (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
-            '</div>' +
-          '</div>';
-      }
-      card.appendChild(row);
-    });
+            (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+          '</div>' + removeHtml +
+        '</div>';
+    } else {
+      var kcal3 = s.track ? Math.round(kcalFor(s.met, st.min, state.settings.weight)) : 0;
+      return '<div class="step-top">' +
+          '<div class="check' + (st.checked ? ' on' : '') + '" data-id="' + s.id + '">' + ICONS.check + '</div>' +
+          '<div class="step-body">' +
+            '<div class="step-label">' + s.label + '</div>' +
+            (s.track ?
+              '<div class="step-meta"><input type="number" min="1" data-min="' + s.id + '" value="' + st.min + '"><span>분</span><span class="kcal-pill">' + kcal3 + ' kcal</span></div>'
+              : '<div class="step-meta"><span>운동 아님</span></div>') +
+            (s.tip ? '<div class="step-tip">' + s.tip + '</div>' : '') +
+          '</div>' + removeHtml +
+        '</div>';
+    }
+  }
 
-    // 단순 체크 (plain)
+  // floors/sets/plain 공통 이벤트 위임 (일반 루틴, 직접선택 모드 둘 다 사용)
+  function wireStepControls(card, stepsList){
     card.querySelectorAll(".check[data-id]").forEach(function(el){
       el.addEventListener("click", function(){
         var id = el.dataset.id;
@@ -699,23 +755,19 @@
         updateSummary();
       });
     });
-
-    // 체크 아이콘 탭으로 층수 항목 완료/해제
     card.querySelectorAll("[data-floorcheck]").forEach(function(el){
       el.addEventListener("click", function(){
         var id = el.dataset.floorcheck;
-        var stepDef = steps.find(function(s){ return s.id === id; });
+        var stepDef = stepsList.find(function(s){ return s.id === id; });
         state.stepState[id].floors = state.stepState[id].floors > 0 ? 0 : stepDef.defaultFloors;
         renderSteps();
         updateSummary();
       });
     });
-
-    // 체크 아이콘 탭으로 세트 항목 완료/해제
     card.querySelectorAll("[data-setcheck]").forEach(function(el){
       el.addEventListener("click", function(){
         var id = el.dataset.setcheck;
-        var stepDef = steps.find(function(s){ return s.id === id; });
+        var stepDef = stepsList.find(function(s){ return s.id === id; });
         state.stepState[id].sets = state.stepState[id].sets > 0 ? 0 : stepDef.defaultSets;
         renderSteps();
         updateSummary();
@@ -729,8 +781,6 @@
         updateSummary();
       });
     });
-
-    // 층수 스테퍼
     card.querySelectorAll("[data-floorinc]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var id = btn.dataset.floorinc;
@@ -745,8 +795,6 @@
         renderSteps(); updateSummary();
       });
     });
-
-    // 세트 스테퍼
     card.querySelectorAll("[data-setinc]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var id = btn.dataset.setinc;
@@ -768,12 +816,105 @@
         renderSteps(); updateSummary();
       });
     });
+    card.querySelectorAll("[data-remove-custom]").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = btn.dataset.removeCustom;
+        state.customStepIds = state.customStepIds.filter(function(x){ return x !== id; });
+        delete state.stepState[id];
+        saveCustomPick();
+        renderSteps();
+      });
+    });
+  }
 
+  function renderSteps(){
+    var card = document.getElementById("stepsCard");
+    var addSection = document.getElementById("customAddSection");
+    if(state.routine === "custom"){
+      addSection.style.display = "";
+      renderCustomAddList();
+      renderCustomTrackedList(card);
+      return;
+    }
+    addSection.style.display = "none";
+    card.innerHTML = "";
+    var steps = ROUTINES[state.routine].steps;
+    steps.forEach(function(s){
+      var st = state.stepState[s.id];
+      var row = document.createElement("div");
+      row.className = "step";
+      row.innerHTML = buildStepHTML(s, st, false);
+      card.appendChild(row);
+    });
+    wireStepControls(card, steps);
+    updateSummary();
+  }
+
+  // 종목 추가 버튼에 쓸 짧은 이름 (긴 라벨은 shortLabel로, 없으면 원래 라벨에서 번호·괄호만 제거)
+  function poolLabel(s){
+    if(s.shortLabel) return s.shortLabel;
+    return s.label.replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/, "").replace(/\s*\([^)]*\)\s*$/, "");
+  }
+
+  // 직접선택(짜집기) 모드 - 위쪽 "종목 추가": 출장을 제외한 모든 루틴의 종목을
+  // 카테고리별 2열 그리드로 항상 보여주고, 탭할 때마다 선택/해제를 토글한다.
+  // (담으면 목록에서 사라지지 않고 하이라이트만 켜져서 뭘 골랐는지 헷갈리지 않게 한다)
+  function renderCustomAddList(){
+    var addCard = document.getElementById("customAddCard");
+    var html = "";
+    CUSTOM_SOURCE_KEYS.forEach(function(key){
+      var items = ALL_STEPS_POOL.filter(function(p){ return p._src === key; });
+      if(!items.length) return;
+      html += '<div class="custom-group-label">' + CUSTOM_SOURCE_LABELS[key] + '</div>';
+      html += '<div class="custom-add-list">';
+      items.forEach(function(s){
+        var isSel = state.customStepIds.indexOf(s.id) !== -1;
+        html += '<button class="custom-add-btn' + (isSel ? ' selected' : '') + '" data-togglecustom="' + s.id + '">' +
+                  '<span>' + poolLabel(s) + '</span>' +
+                  '<span class="plus">' + (isSel ? ICONS.check : '+') + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    });
+    addCard.innerHTML = html;
+    addCard.querySelectorAll("[data-togglecustom]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.dataset.togglecustom;
+        var idx = state.customStepIds.indexOf(id);
+        if(idx === -1){
+          state.customStepIds.push(id);
+        } else {
+          state.customStepIds.splice(idx, 1);
+          delete state.stepState[id];
+        }
+        syncCustomStepState();
+        saveCustomPick();
+        renderSteps();
+      });
+    });
+  }
+
+  // 직접선택(짜집기) 모드 - 아래쪽 "오늘 구성": 실제로 담은 종목만 트래커로 보여준다.
+  // 종목이 늘어날수록 이 부분만 아래로 길어지도록, "종목 추가"와 분리된 카드에 렌더링한다.
+  function renderCustomTrackedList(card){
+    var selected = getCustomSteps();
+    if(!selected.length){
+      card.innerHTML = '<div class="empty" style="padding:18px 0;">아직 선택한 종목이 없어요. 위 "종목 추가"에서 오늘 할 운동을 골라보세요.</div>';
+      updateSummary();
+      return;
+    }
+    var html = "";
+    selected.forEach(function(s){
+      html += '<div class="step">' + buildStepHTML(s, state.stepState[s.id], true) + '</div>';
+    });
+    card.innerHTML = html;
+    wireStepControls(card, selected);
     updateSummary();
   }
 
   function updateSummary(){
-    var steps = ROUTINES[state.routine].steps;
+    var steps = getActiveSteps();
     var totalKcal = 0, doneCount = 0;
     steps.forEach(function(s){
       var st = state.stepState[s.id];
@@ -799,7 +940,7 @@
   }
 
   document.getElementById("saveBtn").addEventListener("click", function(){
-    var steps = ROUTINES[state.routine].steps;
+    var steps = getActiveSteps();
     var totalKcal = 0, totalMin = 0, doneCount = 0;
     var detail = {};
     steps.forEach(function(s){
@@ -841,7 +982,8 @@
       date: sessionDate,
       ts: sessionTs,
       routine: state.routine,
-      routineName: ROUTINES[state.routine].name,
+      routineName: state.routine === "custom" ? "직접 구성한 루틴 (" + steps.length + "종목)" : ROUTINES[state.routine].name,
+      stepsMeta: state.routine === "custom" ? steps.map(function(s){ return {id:s.id, label:s.label, type:s.type}; }) : undefined,
       doneCount: doneCount,
       totalSteps: steps.length,
       kcal: Math.round(totalKcal),
@@ -1005,6 +1147,7 @@
     var sessions = loadSessions();
     renderPeriodChart(sessions);
     renderCalendar(sessions);
+    renderWeightChart();
 
     // 연속 운동일
     var dateSet = new Set(sessions.map(function(s){ return s.date; }));
@@ -1085,7 +1228,7 @@
       filteredSessions.slice().reverse().slice(0,30).forEach(function(s){
         var row = document.createElement("div");
         row.className = "hist-item";
-        var routineSteps = (ROUTINES[s.routine] && ROUTINES[s.routine].steps) || [];
+        var routineSteps = (ROUTINES[s.routine] && ROUTINES[s.routine].steps) || s.stepsMeta || [];
         var badges = routineSteps.map(function(step, idx){
           var d = s.detail && s.detail[step.id];
           var done = false;
@@ -1167,7 +1310,9 @@
     saveSettings();
     document.getElementById("weightLogInput").value = "";
     renderWeightLogList();
+    renderWeightChart();
     renderSteps();
+    toast("체중 기록을 추가했어요.", "ok");
   });
 
   function renderWeightLogList(){
@@ -1177,6 +1322,50 @@
     el.innerHTML = list.map(function(w){
       return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);"><span>' + w.date + '</span><span style="font-weight:600;">' + w.weight + ' kg</span></div>';
     }).join("");
+  }
+
+  // 체중 변화 추이 라인 그래프 (통계 탭)
+  function renderWeightChart(){
+    var wrap = document.getElementById("weightChartWrap");
+    if(!wrap) return;
+    var log = loadWeightLog().slice().sort(function(a,b){ return a.ts - b.ts; });
+    if(log.length < 2){
+      wrap.innerHTML = '<div class="empty" style="padding:20px 0;">체중을 2회 이상 기록하면 변화 그래프가 보여요.</div>';
+      return;
+    }
+    var recent = log.slice(-20);
+    var target = state.settings.target || 73;
+    var weights = recent.map(function(w){ return w.weight; }).concat([target]);
+    var minW = Math.min.apply(null, weights) - 1;
+    var maxW = Math.max.apply(null, weights) + 1;
+    if(maxW - minW < 2){ minW -= 1; maxW += 1; }
+    var W = 320, H = 150, padL = 30, padR = 12, padT = 16, padB = 22;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    function xPos(i){ return padL + (recent.length === 1 ? plotW/2 : (i/(recent.length-1)) * plotW); }
+    function yPos(v){ return padT + (1 - (v - minW)/(maxW - minW)) * plotH; }
+    var pathD = recent.map(function(w, i){ return (i === 0 ? "M" : "L") + xPos(i).toFixed(1) + "," + yPos(w.weight).toFixed(1); }).join(" ");
+    var targetY = yPos(target).toFixed(1);
+    var dots = recent.map(function(w, i){
+      return '<circle cx="' + xPos(i).toFixed(1) + '" cy="' + yPos(w.weight).toFixed(1) + '" r="3" fill="var(--accent)" stroke="var(--card)" stroke-width="1.5"></circle>';
+    }).join("");
+    var first = recent[0], last = recent[recent.length-1];
+    var trendDiff = (last.weight - first.weight);
+    var trendLabel = (trendDiff <= 0 ? "▼ " + Math.abs(trendDiff).toFixed(1) : "▲ " + trendDiff.toFixed(1)) + "kg";
+    var trendColor = trendDiff <= 0 ? "var(--success)" : "var(--danger)";
+    var svg =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:150px;display:block;overflow:visible;">' +
+        '<line x1="' + padL + '" y1="' + targetY + '" x2="' + (W-padR) + '" y2="' + targetY + '" stroke="var(--accent-dark)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>' +
+        '<text x="' + (W-padR) + '" y="' + (parseFloat(targetY)-5) + '" text-anchor="end" font-size="9.5" fill="var(--accent-dark)">목표 ' + target + 'kg</text>' +
+        '<path d="' + pathD + '" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        dots +
+        '<text x="' + padL + '" y="' + (H-4) + '" font-size="9.5" fill="var(--sub)">' + first.date.slice(5) + '</text>' +
+        '<text x="' + (W-padR) + '" y="' + (H-4) + '" text-anchor="end" font-size="9.5" fill="var(--sub)">' + last.date.slice(5) + '</text>' +
+      '</svg>';
+    wrap.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">' +
+        '<div style="font-size:11px;color:var(--sub);">최근 ' + recent.length + '회 기록</div>' +
+        '<div style="font-size:12.5px;font-weight:700;color:' + trendColor + ';">' + trendLabel + ' (기간 내)</div>' +
+      '</div>' + svg;
   }
 
   document.getElementById("resetBtn").addEventListener("click", function(){
